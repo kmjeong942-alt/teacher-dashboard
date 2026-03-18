@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kimju.zip — 교사 전용 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink-100: #fff0f3;
+    --pink-200: #ffd6df;
+    --pink-300: #ffb3c6;
+    --pink-400: #ff85a1;
+    --pink-500: #ff4d6d;
+    --rose: #e8647a;
+    --cream: #fffaf9;
+    --white: #ffffff;
+    --gray-100: #f8f4f5;
+    --gray-200: #ede8e9;
+    --gray-400: #b0a4a7;
+    --gray-600: #7a6a6d;
+    --gray-800: #3d2f31;
+    --dark: #1e1418;
+    --shadow-soft: 0 2px 16px rgba(200,100,120,0.08);
+    --shadow-card: 0 4px 24px rgba(200,100,120,0.12);
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--pink-100);
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Soft background gradient blobs */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; left: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,180,200,0.35) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,200,215,0.3) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── ANNOUNCEMENT BAR ── */
+  .announcement-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 32px;
+    background: linear-gradient(90deg, var(--rose), var(--pink-400), var(--rose));
+    background-size: 200% 100%;
+    animation: gradShift 6s ease infinite;
+    display: flex; align-items: center;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(232,100,122,0.25);
+  }
+  @keyframes gradShift {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  .announcement-bar .ticker-wrap {
+    display: flex; align-items: center;
+    white-space: nowrap;
+    animation: ticker 28s linear infinite;
+  }
+  @keyframes ticker {
+    from { transform: translateX(100vw); }
+    to   { transform: translateX(-100%); }
+  }
+  .announcement-bar .ticker-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.04em;
+    padding-right: 80px;
+  }
+  .announcement-bar .ticker-icon { margin-right: 10px; font-size: 13px; }
+
+  /* ── MAIN LAYOUT ── */
+  .dashboard {
+    position: relative;
+    z-index: 1;
+    margin-top: 32px;
+    padding: 14px 16px 10px;
+    display: grid;
+    grid-template-columns: 260px 1fr 240px;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    height: calc(100vh - 32px);
+  }
+
+  /* ── CARD BASE ── */
+  .card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(12px);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255,182,193,0.25);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(200,100,120,0.16); }
+
+  .card-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pink-400);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-title::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: var(--pink-400);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── A. FILE ORGANIZER (top-left) ── */
+  .file-organizer { grid-column: 1; grid-row: 1 / 3; display: flex; flex-direction: column; gap: 10px; }
+
+  .file-zone {
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    flex: 1;
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .file-zone-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .file-zone-title .badge {
+    background: var(--pink-300);
+    color: #fff;
+    border-radius: 8px;
+    padding: 1px 7px;
+    font-size: 10px;
+  }
+
+  .zone-urgent {
+    background: rgba(255,180,198,0.2);
+    border: 2px dashed var(--pink-300);
+  }
+  .zone-inprogress {
+    background: rgba(255,240,243,0.8);
+    border: 1px solid var(--pink-200);
+  }
+  .zone-later {
+    background: rgba(248,244,245,0.9);
+    border: 1px solid var(--gray-200);
+  }
+
+  .file-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.75);
+    margin-bottom: 5px;
+    font-size: 11px;
+    color: var(--gray-800);
+    border: 1px solid rgba(255,182,193,0.2);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .file-item:hover { background: var(--pink-100); }
+  .file-item .file-icon { font-size: 14px; }
+  .file-item .file-name { flex: 1; font-weight: 500; }
+  .file-item .file-date { font-size: 9px; color: var(--gray-400); }
+
+  .drop-hint {
+    text-align: center;
+    color: var(--pink-300);
+    font-size: 10px;
+    padding: 12px 0;
+    font-style: italic;
+  }
+
+  /* ── B. SCHEDULER (top-center) ── */
+  .scheduler { grid-column: 2; grid-row: 1; }
+
+  .scheduler-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .clock-block .time-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .clock-block .time-display .colon { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .clock-block .date-display {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .status-pill {
+    background: linear-gradient(135deg, var(--pink-300), var(--rose));
+    color: white;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 3px 12px rgba(232,100,122,0.3);
+    white-space: nowrap;
+    margin-top: 4px;
+  }
+  .status-pill .status-dot {
+    width: 7px; height: 7px;
+    background: #fff;
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.75); } }
+
+  /* Timetable */
+  .timetable-wrap { overflow: auto; margin-top: 8px; }
+  .timetable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 3px;
+    font-size: 10.5px;
+  }
+  .timetable th {
+    background: var(--pink-200);
+    color: var(--rose);
+    font-weight: 700;
+    text-align: center;
+    padding: 5px 3px;
+    border-radius: 6px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+  .timetable .period-label {
+    background: var(--gray-100);
+    color: var(--gray-600);
+    font-weight: 600;
+    text-align: center;
+    padding: 5px;
+    border-radius: 6px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .timetable td {
+    background: rgba(255,255,255,0.7);
+    color: var(--gray-800);
+    text-align: center;
+    padding: 5px 4px;
+    border-radius: 6px;
+    font-size: 9.5px;
+    font-weight: 500;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .timetable td:hover { background: var(--pink-100); }
+  .timetable .active-cell {
+    background: linear-gradient(135deg, var(--pink-300), var(--rose)) !important;
+    color: #fff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(232,100,122,0.35);
+  }
+  .timetable .today-col {
+    background: rgba(255,210,222,0.35) !important;
+  }
+
+  /* ── C. WIDGETS (top-right) ── */
+  .widgets { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Quick Menu */
+  .quick-menu {
+    display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .quick-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink-200), var(--pink-300));
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 3px 10px rgba(200,100,120,0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+  }
+  .quick-btn:hover {
+    transform: scale(1.12) translateY(-2px);
+    box-shadow: 0 5px 16px rgba(200,100,120,0.35);
+  }
+
+  /* Weather */
+  .weather-block {
+    background: linear-gradient(135deg, rgba(255,182,193,0.3), rgba(255,240,243,0.8));
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    border: 1px solid var(--pink-200);
+  }
+  .weather-main {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .weather-temp-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1;
+  }
+  .weather-icon-big { font-size: 32px; }
+  .weather-meta {
+    margin-top: 8px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .weather-tag {
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 9.5px;
+    color: var(--gray-600);
+    display: flex; align-items: center; gap: 4px;
+    font-weight: 500;
+  }
+  .weather-tag .tag-val { color: var(--dark); font-weight: 700; }
+  .weather-tag.warn .tag-val { color: var(--rose); }
+
+  /* ── D. NOTICE & D-DAY (bottom-center) ── */
+  .notice-section { grid-column: 2; grid-row: 2; display: flex; gap: 12px; }
+
+  .dday-card { flex: 0 0 140px; text-align: center; }
+  .dday-main {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px;
+    color: var(--rose);
+    line-height: 1;
+    margin: 8px 0 4px;
+  }
+  .dday-label { font-size: 11px; color: var(--gray-600); font-weight: 600; }
+  .dday-sub { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+
+  .calendar-card { flex: 1; }
+  .calendar-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .calendar-nav .month-label {
+    font-size: 13px; font-weight: 700; color: var(--gray-800);
+  }
+  .nav-btn {
+    background: var(--pink-100);
+    border: 1px solid var(--pink-200);
+    border-radius: 6px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--rose);
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: var(--pink-200); }
+
+  .event-list { list-style: none; }
+  .event-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--pink-100);
+    font-size: 11px;
+    color: var(--gray-800);
+  }
+  .event-item:last-child { border-bottom: none; }
+  .event-date {
+    min-width: 36px;
+    background: var(--pink-200);
+    color: var(--rose);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 6px;
+    text-align: center;
+  }
+  .event-name { flex: 1; }
+  .event-tag {
+    background: var(--pink-100);
+    color: var(--rose);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  /* ── E. LIFE & TASKS (bottom-right) ── */
+  .life-tasks { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Meal */
+  .meal-block { background: rgba(255,240,243,0.8); border-radius: var(--radius-sm); padding: 10px; border: 1px solid var(--pink-200); }
+  .meal-list { list-style: none; }
+  .meal-item {
+    font-size: 10.5px; color: var(--gray-800); padding: 3px 0;
+    border-bottom: 1px dashed var(--pink-200);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .meal-item:last-child { border-bottom: none; }
+  .meal-item::before { content: '•'; color: var(--pink-300); }
+  .meal-kcal {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gray-400);
+    margin-top: 5px;
+    font-weight: 600;
+  }
+
+  /* Todo */
+  .todo-block {}
+  .todo-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--pink-100);
+    font-size: 11px;
+    color: var(--gray-800);
+    cursor: pointer;
+  }
+  .todo-item:last-child { border-bottom: none; }
+  .todo-item input[type=checkbox] {
+    accent-color: var(--rose);
+    width: 13px; height: 13px;
+    cursor: pointer;
+  }
+  .todo-item.done span { text-decoration: line-through; color: var(--gray-400); }
+  .todo-time { margin-left: auto; font-size: 9.5px; color: var(--pink-400); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  /* Memo */
+  .memo-block { background: rgba(255,240,243,0.6); border-radius: var(--radius-sm); padding: 10px; border: 1px solid var(--pink-200); }
+  .memo-label { font-size: 9px; letter-spacing: 0.1em; font-weight: 700; color: var(--pink-300); text-transform: uppercase; margin-bottom: 5px; }
+  .memo-area {
+    width: 100%;
+    background: transparent;
+    border: none;
+    resize: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    color: var(--gray-800);
+    line-height: 1.6;
+    outline: none;
+    min-height: 48px;
+  }
+  .memo-area::placeholder { color: var(--pink-300); font-style: italic; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--pink-200); border-radius: 4px; }
+
+  /* Subtle card shimmer */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--pink-300), transparent);
+    opacity: 0.6;
+  }
+
+  .section-icon { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar">
+  <div class="ticker-wrap">
+    <span class="ticker-icon">📢</span>
+    <span class="ticker-text" id="ticker-text">16시 교직원 회의실로!! 부장회의 있습니다!! &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🍜 오늘 저녁 마라탕 어때?? &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 📌 kimju.zip v2.1 — Google Sheets 실시간 연동 중 ✓</span>
+  </div>
+</div>
+
+<!-- DASHBOARD GRID -->
+<div class="dashboard">
+
+  <!-- A. FILE ORGANIZER -->
+  <div class="file-organizer">
+    <div class="card" style="padding:14px 14px 10px;">
+      <div class="card-title"><span class="section-icon">📁</span> 파일 관리</div>
+
+      <!-- Urgent Zone -->
+      <div class="file-zone zone-urgent" style="margin-bottom:8px;">
+        <div class="file-zone-title">
+          🚨 긴급 <span class="badge">2</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📝</span>
+          <span class="file-name">평가계획서_초안.docx</span>
+          <span class="file-date">오늘</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📊</span>
+          <span class="file-name">성적처리_마감.xlsx</span>
+          <span class="file-date">내일</span>
+        </div>
+        <div class="drop-hint">여기에 드래그 앤 드롭 ↓</div>
+      </div>
+
+      <!-- In Progress Zone -->
+      <div class="file-zone zone-inprogress" style="margin-bottom:8px;">
+        <div class="file-zone-title">
+          ⚙️ 진행 중 업무 <span class="badge" style="background:var(--pink-400);">3</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">🖼️</span>
+          <span class="file-name">수업자료_3학년.pptx</span>
+          <span class="file-date">03/18</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📋</span>
+          <span class="file-name">학급일지_3월.pdf</span>
+          <span class="file-date">03/17</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📎</span>
+          <span class="file-name">가정통신문_초안.hwp</span>
+          <span class="file-date">03/16</span>
+        </div>
+      </div>
+
+      <!-- Later Zone -->
+      <div class="file-zone zone-later">
+        <div class="file-zone-title">
+          🗂️ 나중에 볼 파일 <span class="badge" style="background:var(--gray-400);">2</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📸</span>
+          <span class="file-name">현장학습_사진모음.zip</span>
+          <span class="file-date">03/12</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📄</span>
+          <span class="file-name">연구보고서_참고.pdf</span>
+          <span class="file-date">03/10</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. SCHEDULER -->
+  <div class="scheduler card">
+    <div class="scheduler-header">
+      <div class="clock-block">
+        <div class="time-display" id="clock">
+          <span id="hh">--</span><span class="colon">:</span><span id="mm">--</span>
+        </div>
+        <div class="date-display" id="date-display">---- 년 -- 월 -- 일 (—)</div>
+      </div>
+      <div>
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          <span id="current-status">점심시간 🍱 12:20~13:20</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timetable -->
+    <div class="timetable-wrap">
+      <table class="timetable">
+        <thead>
+          <tr>
+            <th>교시</th>
+            <th>월</th>
+            <th class="today-header" style="background:var(--pink-300);color:#fff;border-radius:6px;">화 ★</th>
+            <th>수</th>
+            <th>목</th>
+            <th>금</th>
+          </tr>
+        </thead>
+        <tbody id="timetable-body">
+          <tr>
+            <td class="period-label">1교시<br><span style="font-size:8px;color:var(--gray-400);">09:00</span></td>
+            <td>국어</td><td class="today-col">수학</td><td>영어</td><td>국어</td><td>도덕</td>
+          </tr>
+          <tr>
+            <td class="period-label">2교시<br><span style="font-size:8px;color:var(--gray-400);">09:50</span></td>
+            <td>수학</td><td class="today-col">과학</td><td>사회</td><td>수학</td><td>체육</td>
+          </tr>
+          <tr>
+            <td class="period-label">3교시<br><span style="font-size:8px;color:var(--gray-400);">10:50</span></td>
+            <td>영어</td><td class="today-col active-cell">영어</td><td>수학</td><td>미술</td><td>음악</td>
+          </tr>
+          <tr>
+            <td class="period-label">4교시<br><span style="font-size:8px;color:var(--gray-400);">11:40</span></td>
+            <td>과학</td><td class="today-col">국어</td><td>체육</td><td>영어</td><td>사회</td>
+          </tr>
+          <tr>
+            <td class="period-label" style="color:var(--pink-300);">🍱 점심<br><span style="font-size:8px;">12:20</span></td>
+            <td colspan="5" style="background:rgba(255,182,193,0.15);color:var(--pink-400);font-weight:600;font-size:10px;text-align:center;">점심시간 (12:20 ~ 13:20)</td>
+          </tr>
+          <tr>
+            <td class="period-label">5교시<br><span style="font-size:8px;color:var(--gray-400);">13:20</span></td>
+            <td>사회</td><td class="today-col">미술</td><td>음악</td><td>과학</td><td>영어</td>
+          </tr>
+          <tr>
+            <td class="period-label">6교시<br><span style="font-size:8px;color:var(--gray-400);">14:10</span></td>
+            <td>체육</td><td class="today-col">창체</td><td>국어</td><td>사회</td><td>수학</td>
+          </tr>
+          <tr>
+            <td class="period-label">7교시<br><span style="font-size:8px;color:var(--gray-400);">15:00</span></td>
+            <td>—</td><td class="today-col">자율</td><td>—</td><td>창체</td><td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- C. WIDGETS -->
+  <div class="widgets">
+    <div class="card">
+      <div class="card-title"><span class="section-icon">🔗</span> 퀵 메뉴</div>
+      <div class="quick-menu">
+        <a class="quick-btn" title="홈" href="#">🏠</a>
+        <a class="quick-btn" title="구글 캘린더" href="#">📅</a>
+        <a class="quick-btn" title="구글 드라이브" href="#">💾</a>
+        <a class="quick-btn" title="연락처" href="#">👥</a>
+        <a class="quick-btn" title="클래스룸" href="#">🎓</a>
+        <a class="quick-btn" title="설정" href="#">⚙️</a>
+      </div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div class="card-title"><span class="section-icon">🌤️</span> 날씨 · 환경</div>
+      <div class="weather-block">
+        <div class="weather-main">
+          <div>
+            <div class="weather-temp-big">14°</div>
+            <div style="font-size:10px;color:var(--gray-600);margin-top:3px;">서울 · 맑음</div>
+          </div>
+          <div class="weather-icon-big">⛅</div>
+        </div>
+        <div class="weather-meta">
+          <div class="weather-tag">최고 <span class="tag-val">18°</span></div>
+          <div class="weather-tag">최저 <span class="tag-val">7°</span></div>
+          <div class="weather-tag warn">미세먼지 <span class="tag-val warn">나쁨</span></div>
+          <div class="weather-tag">초미세먼지 <span class="tag-val">보통</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D. NOTICE & D-DAY -->
+  <div class="notice-section">
+    <!-- D-Day -->
+    <div class="card dday-card">
+      <div class="card-title"><span class="section-icon">📆</span> D-Day</div>
+      <div class="dday-main">D-121</div>
+      <div class="dday-label">☀️ 여름방학</div>
+      <div class="dday-sub">2025. 07. 17</div>
+      <hr style="border:none;border-top:1px solid var(--pink-200);margin:10px 0;">
+      <div class="dday-main" style="font-size:28px;">D-14</div>
+      <div class="dday-label">📝 영어도 평가</div>
+      <div class="dday-sub">2025. 04. 01</div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card calendar-card">
+      <div class="calendar-nav">
+        <button class="nav-btn">‹</button>
+        <span class="month-label">📅 2025년 3월 학사일정</span>
+        <button class="nav-btn">›</button>
+      </div>
+      <ul class="event-list">
+        <li class="event-item"><span class="event-date">3/18</span><span class="event-name">수업공개 참관일</span><span class="event-tag">공개</span></li>
+        <li class="event-item"><span class="event-date">3/20</span><span class="event-name">학부모 상담주간 시작</span><span class="event-tag">상담</span></li>
+        <li class="event-item"><span class="event-date">3/25</span><span class="event-name">평가계획서 제출 마감</span><span class="event-tag">마감</span></li>
+        <li class="event-item"><span class="event-date">3/28</span><span class="event-name">체험학습 신청 마감</span><span class="event-tag">행정</span></li>
+        <li class="event-item"><span class="event-date">3/31</span><span class="event-name">3월 학급일지 결재</span><span class="event-tag">결재</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- E. LIFE & TASKS -->
+  <div class="life-tasks">
+    <!-- Meal -->
+    <div class="card" style="padding:13px;">
+      <div class="card-title"><span class="section-icon">🍱</span> 오늘의 급식</div>
+      <div class="meal-block">
+        <ul class="meal-list">
+          <li class="meal-item">잡곡밥</li>
+          <li class="meal-item">된장찌개</li>
+          <li class="meal-item">제육볶음</li>
+          <li class="meal-item">시금치나물</li>
+          <li class="meal-item">배추김치</li>
+          <li class="meal-item">요구르트</li>
+        </ul>
+        <div class="meal-kcal">총 647 kcal</div>
+      </div>
+    </div>
+
+    <!-- Todo -->
+    <div class="card" style="padding:13px;">
+      <div class="card-title"><span class="section-icon">✅</span> 할 일 (To-Do)</div>
+      <div class="todo-block" id="todo-list">
+        <label class="todo-item">
+          <input type="checkbox"> <span>평가계획서 작성</span>
+          <span class="todo-time">마감 내일</span>
+        </label>
+        <label class="todo-item done">
+          <input type="checkbox" checked> <span>조례 출석 확인</span>
+          <span class="todo-time">완료</span>
+        </label>
+        <label class="todo-item">
+          <input type="checkbox"> <span>17시 하원 지도</span>
+          <span class="todo-time">17:00</span>
+        </label>
+        <label class="todo-item">
+          <input type="checkbox"> <span>가정통신문 배부</span>
+          <span class="todo-time">오늘 중</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Memo -->
+    <div class="card" style="padding:13px; flex-grow:1;">
+      <div class="card-title"><span class="section-icon">📝</span> 메모장</div>
+      <div class="memo-block">
+        <div class="memo-label">NOW AND HERE</div>
+        <textarea class="memo-area" placeholder="지금 이 순간 메모...">3반 김○○ 학부모 콜백 필요
+영어 3단원 프린트 인쇄 (35장)</textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── CLOCK ──
+  function updateClock() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('hh').textContent = hh;
+    document.getElementById('mm').textContent = mm;
+
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const y = now.getFullYear(), mo = now.getMonth()+1, d = now.getDate();
+    const dy = days[now.getDay()];
+    document.getElementById('date-display').textContent =
+      `${y}년 ${mo}월 ${d}일 (${dy}요일)`;
+
+    // Status
+    const h = now.getHours(), m = now.getMinutes();
+    const totalMin = h * 60 + m;
+    const statusEl = document.getElementById('current-status');
+    const periods = [
+      [540,590,'1교시 📖 09:00~09:50'],
+      [590,650,'쉬는 시간 ☕ 09:50~10:50'],
+      [650,700,'3교시 📖 10:50~11:40'],
+      [700,740,'4교시 📖 11:40~12:20'],
+      [740,800,'점심시간 🍱 12:20~13:20'],
+      [800,850,'5교시 📖 13:20~14:10'],
+      [850,910,'6교시 📖 14:10~15:00'],
+      [910,960,'7교시 📖 15:00~15:50'],
+    ];
+    let found = '방과 후 시간 🏫';
+    for (const [s, e, label] of periods) {
+      if (totalMin >= s && totalMin < e) { found = label; break; }
+    }
+    statusEl.textContent = found;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── TODO checkboxes ──
+  document.querySelectorAll('#todo-list input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', function() {
+      this.closest('.todo-item').classList.toggle('done', this.checked);
+    });
+  });
+</script>
+</body>
+</html>
