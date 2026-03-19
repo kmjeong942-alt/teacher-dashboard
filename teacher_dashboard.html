@@ -17,8 +17,8 @@ const CONFIG = {
   // 2. https://open.neis.go.kr/portal/data/service/selectServicePage.do?infId=OPEN17320190722180924242823
   //    에서 학교코드 조회 (학교명으로 검색)
   NEIS_API_KEY:   'c96838e8f2e645c58c1b40020c89e7b1',   // ← 발급받은 NEIS API 키
-  NEIS_REGION:    'J10',                 // ← 경기=J10 (다른 지역은 아래 주석 참고)
-  NEIS_SCHOOL_CODE: '7530881',  // ← 학교코드 (예: 7530045)
+  NEIS_REGION:    'J10',                 // ← 경기=J10
+  NEIS_SCHOOL_CODE: '7530881',           // ← 학교코드
   // 지역코드: 서울B10 부산C10 대구D10 인천E10 광주F10 대전G10 울산H10
   //           세종I10 경기J10 강원K10 충북M10 충남N10 전북P10 전남Q10
   //           경북R10 경남S10 제주T10
@@ -43,14 +43,14 @@ const CONFIG = {
   // 요일 자동 감지 → today-col/active-cell 자동 적용됨
   // 수업 없는 날은 '—' 으로 입력
   TIMETABLE: [
-    //        월      화      수      목      금
-    /* 1교시 */ ['',  '수학',  '',  '', '],
-    /* 2교시 */ ['제과제빵',  '',  '수학',  '수학',  ''],
-    /* 3교시 */ ['제과제빵',  '수학',  '',  '컴퓨터',  '수학'],
-    /* 4교시 */ ['제과제빵',  '수학',  '수학',  '수학',  ''],
-    /* 5교시 */ ['제과제빵',  '',  '',  '수학',  '수학'],
-    /* 6교시 */ ['',  '창체',  '',  '',  '수학'],
-    /* 7교시 */ ['—',     '',  '—',     '창체',  '—'  ],
+    //        월           화       수          목          금
+    /* 1교시 */ ['',       '수학',  '',         '',         ''],
+    /* 2교시 */ ['제과제빵', '',     '수학',     '수학',     ''],
+    /* 3교시 */ ['제과제빵', '수학', '',         '컴퓨터',   '수학'],
+    /* 4교시 */ ['제과제빵', '수학', '수학',     '수학',     ''],
+    /* 5교시 */ ['제과제빵', '',     '',         '수학',     '수학'],
+    /* 6교시 */ ['',        '창체', '',         '',         '수학'],
+    /* 7교시 */ ['—',       '',     '—',        '창체',     '—'],
   ],
 
   // ── 교시 시간 설정 ───────────────────────────────────────────
@@ -62,7 +62,7 @@ const CONFIG = {
     { label: '점심',  start: '12:50', end: '13:50', isLunch: true },
     { label: '5교시', start: '13:50', end: '14:40' },
     { label: '6교시', start: '14:50', end: '15:40' },
-    { label: '7교시', start: '15:50', end: '15:40' },
+    { label: '7교시', start: '15:50', end: '16:40' },
   ],
 };
 /* ============================================================ */
@@ -537,10 +537,12 @@ async function fetchMeal() {
   try {
     const today = new Date();
     const ymd = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
-    const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_REGION}&SD_SCHUL_CODE=${NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`;
+    const neisUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_REGION}&SD_SCHUL_CODE=${NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`;
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent(neisUrl)}`;
 
     const res = await fetch(url);
-    const data = await res.json();
+    const raw = await res.json();
+    const data = JSON.parse(raw.contents);
     const info = data?.mealServiceDietInfo?.[1]?.row?.[0];
 
     if (!info) {
@@ -551,7 +553,7 @@ async function fetchMeal() {
     // 메뉴 파싱 (알레르기 번호 제거)
     const menus = info.DDISH_NM
       .split('<br/>')
-      .map(m => m.replace(/\d+\./g,'').trim())
+      .map(m => m.replace(/\(\d+(\.\d+)*\)/g,'').replace(/\d+\./g,'').trim())
       .filter(Boolean);
 
     document.getElementById('meal-list').innerHTML = menus.map(m => `<li class="meal-item">${m}</li>`).join('');
@@ -595,9 +597,11 @@ async function fetchSchedule(year, month) {
 
   try {
     const ym = `${year}${String(month).padStart(2,'0')}`;
-    const url = `https://open.neis.go.kr/hub/SchoolSchedule?KEY=${NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_REGION}&SD_SCHUL_CODE=${NEIS_SCHOOL_CODE}&AA_YMD=${ym}`;
+    const neisUrl = `https://open.neis.go.kr/hub/SchoolSchedule?KEY=${NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_REGION}&SD_SCHUL_CODE=${NEIS_SCHOOL_CODE}&AA_YMD=${ym}`;
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent(neisUrl)}`;
     const res = await fetch(url);
-    const data = await res.json();
+    const raw = await res.json();
+    const data = JSON.parse(raw.contents);
     const rows = data?.SchoolSchedule?.[1]?.row;
 
     if (!rows || rows.length === 0) {
