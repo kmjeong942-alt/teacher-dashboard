@@ -447,8 +447,8 @@ const $ = id => document.getElementById(id);
 const toMin = (h,m) => h*60+m;
 const parseT = s => { const [h,m]=s.split(':').map(Number); return toMin(h,m); };
 
-/* ── 노션 API → Vercel 프록시 경유 ── */
-const VERCEL_API = 'https://teacher-dashboard-topaz.vercel.app/api/notion';
+/* ── 노션 API → Vercel 프록시 경유 (상대경로) ── */
+const VERCEL_API = '/api/notion';
 
 async function notionFetch(endpoint, method='GET', body=null) {
   const res = await fetch(`${VERCEL_API}?endpoint=${encodeURIComponent(endpoint)}`, {
