@@ -29,7 +29,7 @@ const CONFIG = {
   SHEET_POLL_SEC: 20,
 
   // 노션 연동 (토큰은 Vercel 환경변수에서 관리 — 여기엔 없음 ✅)
-  NOTION_SCHED_DB:  '30cb45c1f60081bd9f92e5882cf33b81',
+  NOTION_SCHED_DB:  'ad6a68a3b266472597edc5af18ed0fef',
   NOTION_MEMO_PAGE: '328b45c1f60080f982e4cfaee95901cc',
 
   // 시간표
@@ -94,7 +94,7 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 
 /* 패널 */
 .panel { background:var(--surface); border-radius:var(--r); padding:14px 16px; box-shadow:var(--shadow); border:1px solid var(--line); overflow:hidden; display:flex; flex-direction:column; }
-.lbl { font-size:9.5px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+.lbl { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; display:flex; align-items:center; gap:7px; }
 .lbl::after { content:''; flex:1; height:1px; background:var(--line); }
 
 /* ══ A. 파일관리 (좌측 전체) ══ */
@@ -104,18 +104,18 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 .fzone-urgent  { background:#fff5f7; border:1.5px dashed var(--rose-md); }
 .fzone-progress{ background:#fafafa; border:1px solid var(--line); }
 .fzone-later   { background:#fafafa; border:1px solid var(--line); }
-.fhead { font-size:12px; font-weight:700; color:var(--ink-2); margin-bottom:6px; display:flex; align-items:center; gap:5px; }
-.fcnt { font-size:10px; font-weight:700; background:var(--rose); color:#fff; border-radius:20px; padding:1px 6px; }
+.fhead { font-size:13.5px; font-weight:700; color:var(--ink-2); margin-bottom:6px; display:flex; align-items:center; gap:5px; }
+.fcnt { font-size:11px; font-weight:700; background:var(--rose); color:#fff; border-radius:20px; padding:1px 6px; }
 .fcnt.g { background:var(--ink-3); }
 .flist { flex:1; overflow-y:auto; min-height:0; }
-.fitem { display:flex; align-items:center; gap:6px; padding:5px 7px; border-radius:6px; font-size:11.5px; color:var(--ink-2); background:rgba(255,255,255,0.7); border:1px solid transparent; margin-bottom:3px; cursor:pointer; transition:all 0.15s; }
+.fitem { display:flex; align-items:center; gap:6px; padding:5px 7px; border-radius:6px; font-size:13px; color:var(--ink-2); background:rgba(255,255,255,0.7); border:1px solid transparent; margin-bottom:3px; cursor:pointer; transition:all 0.15s; }
 .fitem:hover { background:var(--rose-lt); border-color:var(--rose-md); }
 .fn { flex:1; font-weight:500; }
-.fd { font-size:9.5px; color:var(--ink-3); white-space:nowrap; }
-.fdel { background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:11px; opacity:0; transition:opacity 0.15s; padding:0 2px; }
+.fd { font-size:11px; color:var(--ink-3); white-space:nowrap; }
+.fdel { background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:12px; opacity:0; transition:opacity 0.15s; padding:0 2px; }
 .fitem:hover .fdel { opacity:1; }
 .fdel:hover { color:var(--rose); }
-.fadd { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:3px; font-size:10.5px; color:var(--ink-3); cursor:pointer; margin-top:4px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
+.fadd { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:3px; font-size:11.5px; color:var(--ink-3); cursor:pointer; margin-top:4px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
 .fadd:hover { background:var(--rose-lt); border-color:var(--rose-md); color:var(--rose); }
 
 /* ══ B. 중앙 상단: 시계 + 시간표 + 급식 ══ */
@@ -124,48 +124,51 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 .clock-time { font-family:'JetBrains Mono',monospace; font-size:46px; font-weight:600; color:var(--ink); line-height:1; letter-spacing:-0.03em; }
 .clock-time .blink { animation:blink 1s step-end infinite; }
 @keyframes blink { 50%{opacity:0} }
-.clock-date { font-size:12px; color:var(--ink-3); margin-top:4px; font-weight:500; }
-.now-pill { flex-shrink:0; background:var(--rose); color:#fff; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; box-shadow:0 3px 14px rgba(200,82,106,0.3); white-space:nowrap; margin-top:4px; }
+.clock-date { font-size:14px; color:var(--ink-3); margin-top:4px; font-weight:500; }
+.now-pill { flex-shrink:0; background:var(--rose); color:#fff; border-radius:20px; padding:6px 14px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; box-shadow:0 3px 14px rgba(200,82,106,0.3); white-space:nowrap; margin-top:4px; }
 .now-dot { width:7px; height:7px; background:#fff; border-radius:50%; animation:pulse 2s ease infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+/* 조퇴 안내 */
+.leave-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(200,82,106,0.1); border:1px solid var(--rose-md); border-radius:8px; padding:3px 10px; font-size:12px; font-weight:600; color:var(--rose); margin-top:5px; }
 
 /* 시간표 + 급식 나란히 */
 .sched-body { flex:1; display:flex; gap:10px; overflow:hidden; min-height:0; }
 .tt-wrap { flex:1; overflow:auto; }
 .tt { width:100%; border-collapse:separate; border-spacing:3px; }
-.tt th { font-size:10.5px; font-weight:700; color:var(--ink-3); text-align:center; padding:4px 3px; background:var(--bg); border-radius:5px; }
+.tt th { font-size:12px; font-weight:700; color:var(--ink-3); text-align:center; padding:4px 3px; background:var(--bg); border-radius:5px; }
 .tt th.today-h { background:var(--rose); color:#fff; }
-.tt .plabel { font-size:10px; font-weight:600; color:var(--ink-3); text-align:center; padding:5px 3px; background:var(--bg); border-radius:5px; white-space:nowrap; }
-.tt td { font-size:11.5px; font-weight:500; text-align:center; padding:5px 3px; border-radius:5px; color:var(--ink-2); background:#fafafa; }
+.tt .plabel { font-size:11px; font-weight:600; color:var(--ink-3); text-align:center; padding:5px 3px; background:var(--bg); border-radius:5px; white-space:nowrap; }
+.tt td { font-size:13px; font-weight:500; text-align:center; padding:5px 3px; border-radius:5px; color:var(--ink-2); background:#fafafa; }
 .tt td:hover { background:var(--rose-lt); }
 .tt .tcol { background:rgba(200,82,106,0.07) !important; }
 .tt .active { background:var(--rose) !important; color:#fff !important; font-weight:700; box-shadow:0 2px 8px rgba(200,82,106,0.35); }
-.tt .lunch td { background:rgba(200,82,106,0.05); color:var(--rose); font-size:10.5px; font-weight:600; text-align:center; }
+.tt .lunch td { background:rgba(200,82,106,0.05); color:var(--rose); font-size:11.5px; font-weight:600; text-align:center; }
 
 /* 급식 (시간표 옆) */
 .meal-side { flex:0 0 130px; display:flex; flex-direction:column; }
 .meal-side .lbl { margin-bottom:7px; }
 .meal-items { flex:1; overflow-y:auto; list-style:none; }
-.meal-row { display:flex; align-items:center; gap:5px; padding:3.5px 0; border-bottom:1px solid var(--line); font-size:12px; color:var(--ink-2); }
+.meal-row { display:flex; align-items:center; gap:5px; padding:3.5px 0; border-bottom:1px solid var(--line); font-size:13px; color:var(--ink-2); }
 .meal-row:last-child { border-bottom:none; }
 .meal-row::before { content:'·'; color:var(--rose-md); font-weight:700; }
-.meal-kcal { font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--ink-3); margin-top:5px; text-align:right; }
-.meal-empty { font-size:11px; color:var(--ink-3); font-style:italic; text-align:center; padding:10px 0; }
+.meal-kcal { font-size:11px; font-family:'JetBrains Mono',monospace; color:var(--ink-3); margin-top:5px; text-align:right; }
+.meal-empty { font-size:12px; color:var(--ink-3); font-style:italic; text-align:center; padding:10px 0; }
 
 /* ══ C. 우측 상단: 날씨 + 퀵메뉴 ══ */
 .right-top { grid-column:3; grid-row:1; display:flex; flex-direction:column; gap:8px; }
 .wx-main { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .wx-temp { font-family:'JetBrains Mono',monospace; font-size:38px; font-weight:600; color:var(--ink); line-height:1; }
 .wx-icon { font-size:34px; }
-.wx-desc { font-size:12px; color:var(--ink-3); margin-top:2px; }
+.wx-desc { font-size:13px; color:var(--ink-3); margin-top:2px; }
 .wx-tags { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
-.wx-tag { background:var(--bg); border-radius:6px; padding:4px 7px; font-size:11.5px; color:var(--ink-3); display:flex; align-items:center; justify-content:space-between; }
+.wx-tag { background:var(--bg); border-radius:6px; padding:4px 7px; font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; justify-content:space-between; }
 .wx-tag strong { color:var(--ink); font-weight:600; }
 .wx-tag.warn strong { color:var(--rose); }
-.quick-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-.qbtn { aspect-ratio:1; background:var(--bg); border:1px solid var(--line); border-radius:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:20px; text-decoration:none; transition:all 0.15s; }
+.quick-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+.qbtn { aspect-ratio:1; background:var(--bg); border:1px solid var(--line); border-radius:8px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:16px; text-decoration:none; transition:all 0.15s; }
 .qbtn:hover { background:var(--rose-lt); border-color:var(--rose-md); transform:translateY(-1px); box-shadow:var(--shadow); }
-.qbtn-lbl { font-size:9px; color:var(--ink-3); font-family:'Noto Sans KR',sans-serif; font-weight:500; }
+.qbtn-lbl { font-size:8px; color:var(--ink-3); font-family:'Noto Sans KR',sans-serif; font-weight:500; }
 .q-edit { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:3px; font-size:10.5px; color:var(--ink-3); cursor:pointer; margin-top:5px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
 .q-edit:hover { background:var(--rose-lt); color:var(--rose); border-color:var(--rose-md); }
 
@@ -174,38 +177,38 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 
 /* 할일 */
 .todo-panel { flex:1; }
-.todo-row { display:flex; align-items:center; gap:7px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--ink-2); cursor:pointer; }
+.todo-row { display:flex; align-items:center; gap:7px; padding:6px 0; border-bottom:1px solid var(--line); font-size:13.5px; color:var(--ink-2); cursor:pointer; }
 .todo-row:last-child { border-bottom:none; }
-.todo-row input[type=checkbox] { accent-color:var(--rose); width:13px; height:13px; cursor:pointer; flex-shrink:0; }
+.todo-row input[type=checkbox] { accent-color:var(--rose); width:14px; height:14px; cursor:pointer; flex-shrink:0; }
 .todo-row.done span { text-decoration:line-through; color:var(--ink-3); }
-.todo-t { margin-left:auto; font-size:10px; color:var(--rose); font-family:'JetBrains Mono',monospace; font-weight:600; flex-shrink:0; white-space:nowrap; }
+.todo-t { margin-left:auto; font-size:11px; color:var(--rose); font-family:'JetBrains Mono',monospace; font-weight:600; flex-shrink:0; white-space:nowrap; }
 .todo-del-btn { background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:11px; opacity:0; transition:opacity 0.15s; flex-shrink:0; }
 .todo-row:hover .todo-del-btn { opacity:1; }
 .todo-del-btn:hover { color:var(--rose); }
-.todo-add { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:4px; font-size:11px; color:var(--ink-3); cursor:pointer; margin-top:6px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
+.todo-add { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:4px; font-size:12px; color:var(--ink-3); cursor:pointer; margin-top:6px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
 .todo-add:hover { background:var(--rose-lt); color:var(--rose); border-color:var(--rose-md); }
 
 /* 메모 (노션 연동) */
 .memo-panel { flex:1; }
-.memo-sync-status { font-size:9.5px; color:var(--ink-3); margin-bottom:6px; display:flex; align-items:center; gap:4px; }
+.memo-sync-status { font-size:10.5px; color:var(--ink-3); margin-bottom:6px; display:flex; align-items:center; gap:4px; }
 .sync-dot { width:6px; height:6px; border-radius:50%; background:var(--ink-3); flex-shrink:0; }
 .sync-dot.ok { background:#3a8a6a; }
 .sync-dot.saving { background:var(--rose); animation:pulse 1s ease infinite; }
-.memo-ta { width:100%; flex:1; background:var(--bg); border:1px solid var(--line); border-radius:var(--r-sm); padding:9px 11px; font-family:'Noto Sans KR',sans-serif; font-size:12.5px; color:var(--ink-2); line-height:1.7; resize:none; outline:none; transition:border 0.15s; }
+.memo-ta { width:100%; flex:1; background:var(--bg); border:1px solid var(--line); border-radius:var(--r-sm); padding:9px 11px; font-family:'Noto Sans KR',sans-serif; font-size:13px; color:var(--ink-2); line-height:1.7; resize:none; outline:none; transition:border 0.15s; }
 .memo-ta:focus { border-color:var(--rose-md); background:#fff; }
 .memo-ta::placeholder { color:var(--ink-3); }
-.memo-save-btn { width:100%; background:var(--rose); border:none; border-radius:6px; padding:5px; font-size:11px; color:#fff; font-weight:600; cursor:pointer; margin-top:5px; font-family:'Noto Sans KR',sans-serif; transition:opacity 0.15s; }
+.memo-save-btn { width:100%; background:var(--rose); border:none; border-radius:6px; padding:5px; font-size:12px; color:#fff; font-weight:600; cursor:pointer; margin-top:5px; font-family:'Noto Sans KR',sans-serif; transition:opacity 0.15s; }
 .memo-save-btn:hover { opacity:0.85; }
 
-/* AI 채팅 — 3등분 */
+/* AI 채팅 */
 .ai-panel { flex:1; display:flex; flex-direction:column; }
 .chat-msgs { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:5px; padding-right:3px; margin-bottom:6px; }
 .cmsg { display:flex; gap:6px; align-items:flex-start; }
 .cmsg.user { flex-direction:row-reverse; }
-.cbubble { max-width:88%; padding:5px 9px; border-radius:10px; font-size:11.5px; line-height:1.55; color:var(--ink-2); }
+.cbubble { max-width:88%; padding:6px 10px; border-radius:10px; font-size:12.5px; line-height:1.6; color:var(--ink-2); }
 .cmsg.ai  .cbubble { background:var(--bg); border:1px solid var(--line); border-radius:3px 10px 10px 10px; }
 .cmsg.user .cbubble { background:var(--rose); color:#fff; border-radius:10px 3px 10px 10px; }
-.cavatar { width:20px; height:20px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; margin-top:1px; }
+.cavatar { width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; margin-top:1px; }
 .cmsg.ai .cavatar { background:var(--rose-lt); }
 .cmsg.user .cavatar { background:var(--rose); }
 .thinking span { width:4px; height:4px; background:var(--ink-3); border-radius:50%; display:inline-block; margin:0 2px; animation:th 1.2s ease infinite; }
@@ -213,35 +216,45 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 .thinking span:nth-child(3){animation-delay:.4s}
 @keyframes th{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
 .chat-row { display:flex; gap:5px; flex-shrink:0; }
-.chat-in { flex:1; border:1px solid var(--line); border-radius:var(--r-sm); padding:6px 10px; font-size:11.5px; font-family:'Noto Sans KR',sans-serif; color:var(--ink); outline:none; transition:border 0.15s; background:var(--bg); }
+.chat-in { flex:1; border:1px solid var(--line); border-radius:var(--r-sm); padding:7px 10px; font-size:12.5px; font-family:'Noto Sans KR',sans-serif; color:var(--ink); outline:none; transition:border 0.15s; background:var(--bg); }
 .chat-in:focus { border-color:var(--rose-md); background:#fff; }
 .chat-in::placeholder { color:var(--ink-3); }
-.chat-send { background:var(--rose); border:none; border-radius:var(--r-sm); padding:6px 11px; cursor:pointer; color:#fff; font-size:12px; transition:opacity 0.15s; flex-shrink:0; }
+.chat-send { background:var(--rose); border:none; border-radius:var(--r-sm); padding:7px 12px; cursor:pointer; color:#fff; font-size:13px; transition:opacity 0.15s; flex-shrink:0; }
 .chat-send:hover { opacity:0.85; }
 .chat-send:disabled { opacity:0.5; cursor:not-allowed; }
 
-/* ══ E. 우측 하단: D-Day + 노션 일정 ══ */
+/* ══ E. 우측 하단: D-Day + NEIS 학사일정 + 노션일정 ══ */
 .right-bot { grid-column:3; grid-row:2; display:flex; flex-direction:column; gap:8px; }
 
 /* D-Day 컴팩트 */
 .dday-row { display:flex; gap:7px; }
 .dday-item { flex:1; text-align:center; padding:8px 5px; background:var(--bg); border-radius:var(--r-sm); border:1px solid var(--line); }
-.dday-num { font-family:'Playfair Display',serif; font-size:24px; color:var(--rose); line-height:1; }
-.dday-lbl { font-size:11px; font-weight:600; color:var(--ink-2); margin-top:2px; }
-.dday-dt  { font-size:9.5px; color:var(--ink-3); }
+.dday-num { font-family:'Playfair Display',serif; font-size:26px; color:var(--rose); line-height:1; }
+.dday-lbl { font-size:12px; font-weight:600; color:var(--ink-2); margin-top:2px; }
+.dday-dt  { font-size:10.5px; color:var(--ink-3); }
+
+/* NEIS 학사일정 */
+.neis-cal { flex:1; display:flex; flex-direction:column; min-height:0; }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-shrink:0; }
+.cal-title { font-size:14px; font-weight:700; color:var(--ink); }
+.cal-arr { background:var(--bg); border:1px solid var(--line); border-radius:5px; padding:2px 9px; cursor:pointer; font-size:13px; color:var(--ink-2); transition:all 0.15s; }
+.cal-arr:hover { background:var(--rose-lt); border-color:var(--rose-md); }
+.neis-list { list-style:none; flex:1; overflow-y:auto; }
+.neis-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); font-size:13px; color:var(--ink-2); }
+.neis-row:last-child { border-bottom:none; }
+.neis-d { min-width:34px; text-align:center; background:var(--rose-lt); color:var(--rose); font-size:11px; font-weight:700; padding:2px 4px; border-radius:4px; flex-shrink:0; }
+.neis-n { flex:1; font-weight:500; }
 
 /* 노션 일정 */
-.notion-cal { flex:1; display:flex; flex-direction:column; }
-.notion-status { font-size:9.5px; color:var(--ink-3); margin-bottom:8px; display:flex; align-items:center; gap:4px; }
+.notion-cal { flex:1; display:flex; flex-direction:column; min-height:0; }
+.notion-status { font-size:10.5px; color:var(--ink-3); margin-bottom:8px; display:flex; align-items:center; gap:4px; }
 .event-list { list-style:none; flex:1; overflow-y:auto; }
-.event-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); }
+.event-row { display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-bottom:1px solid var(--line); }
 .event-row:last-child { border-bottom:none; }
-.event-d { min-width:36px; text-align:center; background:var(--rose-lt); color:var(--rose); font-size:10px; font-weight:700; padding:2px 4px; border-radius:5px; flex-shrink:0; margin-top:1px; }
-.event-info { flex:1; }
-.event-n { font-size:12.5px; font-weight:500; color:var(--ink-2); }
-.event-sub { font-size:10px; color:var(--ink-3); margin-top:1px; }
-.event-t { font-size:9.5px; background:var(--bg); color:var(--ink-3); padding:2px 5px; border-radius:4px; font-weight:600; flex-shrink:0; }
-.notion-refresh { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:3px; font-size:10.5px; color:var(--ink-3); cursor:pointer; margin-top:6px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
+.event-d { min-width:36px; text-align:center; background:var(--rose-lt); color:var(--rose); font-size:11px; font-weight:700; padding:2px 4px; border-radius:5px; flex-shrink:0; margin-top:1px; }
+.event-n { font-size:13px; font-weight:500; color:var(--ink-2); flex:1; }
+.event-t { font-size:10px; background:var(--bg); color:var(--ink-3); padding:2px 5px; border-radius:4px; font-weight:600; flex-shrink:0; }
+.notion-refresh { width:100%; background:transparent; border:1px dashed var(--line); border-radius:6px; padding:3px; font-size:11px; color:var(--ink-3); cursor:pointer; margin-top:5px; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; flex-shrink:0; }
 .notion-refresh:hover { background:var(--rose-lt); color:var(--rose); border-color:var(--rose-md); }
 
 /* 모달 */
@@ -305,6 +318,7 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
       <div>
         <div class="clock-time"><span id="hh">--</span><span class="blink">:</span><span id="mm">--</span></div>
         <div class="clock-date" id="clock-date">로딩 중...</div>
+        <div id="leave-info"></div>
       </div>
       <div class="now-pill"><div class="now-dot"></div><span id="now-status">--</span></div>
     </div>
@@ -378,13 +392,25 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 
   </div>
 
-  <!-- E. 우측 하단: D-Day + 노션 일정 -->
+  <!-- E. 우측 하단: D-Day + NEIS 학사일정 + 노션 일정 -->
   <div class="right-bot">
 
     <!-- D-Day -->
     <div class="panel" style="flex:0 0 auto;">
       <div class="lbl">📆 D-Day</div>
       <div class="dday-row" id="dday-row"></div>
+    </div>
+
+    <!-- NEIS 학사일정 -->
+    <div class="panel neis-cal">
+      <div class="cal-nav">
+        <button class="cal-arr" id="cal-prev">‹</button>
+        <span class="cal-title" id="cal-title">-- 년 -- 월 학사일정</span>
+        <button class="cal-arr" id="cal-next">›</button>
+      </div>
+      <ul class="neis-list" id="neis-events">
+        <li class="neis-row" style="color:var(--ink-3);font-style:italic;">불러오는 중...</li>
+      </ul>
     </div>
 
     <!-- 노션 일정 -->
@@ -556,12 +582,30 @@ async function saveMemoToNotion() {
 }
 
 /* ── 시계 ── */
+// 조퇴 정보
+const EARLY_LEAVE = {
+  1: { time: '15:50', label: '육아시간 조퇴' }, // 월
+  5: { time: '15:50', label: '육아시간 조퇴' }, // 금
+  4: { time: '14:50', label: '조퇴' },           // 목
+};
+
 function tick() {
   const now = new Date();
   $('hh').textContent = String(now.getHours()).padStart(2,'0');
   $('mm').textContent = String(now.getMinutes()).padStart(2,'0');
   const days=['일','월','화','수','목','금','토'];
-  $('clock-date').textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]}요일)`;
+  const dow = now.getDay();
+  $('clock-date').textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[dow]}요일)`;
+
+  // 조퇴 표시
+  const leaveEl = $('leave-info');
+  if (EARLY_LEAVE[dow]) {
+    const { time, label } = EARLY_LEAVE[dow];
+    leaveEl.innerHTML = `<div class="leave-pill">🏃 오늘 ${label} ${time}</div>`;
+  } else {
+    leaveEl.innerHTML = '';
+  }
+
   const cur = toMin(now.getHours(), now.getMinutes());
   let txt = '방과 후 🏫';
   for (const p of CONFIG.PERIODS) {
@@ -634,6 +678,37 @@ async function fetchMeal() {
 }
 fetchMeal();
 
+/* ── NEIS 학사일정 ── */
+let neisY = new Date().getFullYear(), neisM = new Date().getMonth()+1;
+
+async function fetchNeisSchedule(y, m) {
+  $('cal-title').textContent = `${y}년 ${m}월 학사일정`;
+  const el = $('neis-events');
+  try {
+    const ym = `${y}${String(m).padStart(2,'0')}`;
+    const base = `https://open.neis.go.kr/hub/SchoolSchedule?KEY=${CONFIG.NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&AA_YMD=${ym}`;
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(base)}`);
+    const raw = await res.json();
+    const data = JSON.parse(raw.contents);
+    const rows = data?.SchoolSchedule?.[1]?.row;
+    if (!rows || !rows.length) {
+      el.innerHTML = '<li class="neis-row" style="color:var(--ink-3);font-style:italic;">이달 학사일정 없음</li>';
+      return;
+    }
+    el.innerHTML = rows.slice(0,7).map(r => {
+      const d = r.AA_YMD.slice(4);
+      const dateLabel = `${parseInt(d.slice(0,2))}/${parseInt(d.slice(2))}`;
+      return `<li class="neis-row"><span class="neis-d">${dateLabel}</span><span class="neis-n">${r.EVENT_NM}</span></li>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<li class="neis-row" style="color:var(--ink-3);">불러오기 실패</li>';
+  }
+}
+
+$('cal-prev').onclick = () => { neisM--; if(neisM<1){neisM=12;neisY--;} fetchNeisSchedule(neisY,neisM); };
+$('cal-next').onclick = () => { neisM++; if(neisM>12){neisM=1;neisY++;} fetchNeisSchedule(neisY,neisM); };
+fetchNeisSchedule(neisY, neisM);
+
 /* ── 날씨 ── */
 async function fetchWx() {
   try {
@@ -666,7 +741,7 @@ function appendMsg(role,text){
   const wrap=$('chat-msgs'),isAI=role==='ai';
   const div=document.createElement('div');
   div.className=`cmsg ${role}`;
-  div.innerHTML=`<div class="cavatar">${isAI?'🤖':'👤'}</div><div class="cbubble">${text.replace(/\n/g,'<br>')}</div>`;
+  div.innerHTML=`<div class="cavatar">${isAI?'🤖':'👤'}</div><div class="cbubble">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
   wrap.appendChild(div); wrap.scrollTop=wrap.scrollHeight; return div;
 }
 function showThinking(){
@@ -683,24 +758,22 @@ async function sendChat(){
   chatHistory.push({role:'user',content:text});
   showThinking();
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('/api/gemini',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
         system:'당신은 교사를 돕는 AI 어시스턴트입니다. 수업 아이디어, 문서 작성, 학생 지도, 학사 업무 등 교사의 업무를 친절하고 실용적으로 도와주세요. 한국어로 간결하게 답변하세요.',
         messages:chatHistory
       })
     });
     const data=await res.json();
-    const reply=data?.content?.[0]?.text||'죄송해요, 답변을 가져오지 못했어요.';
+    const reply=data?.text||'죄송해요, 답변을 가져오지 못했어요.';
     chatHistory.push({role:'assistant',content:reply});
     const t=$('thinking'); if(t)t.remove();
     appendMsg('ai',reply);
   }catch{
     const t=$('thinking'); if(t)t.remove();
-    appendMsg('ai','네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+    appendMsg('ai','오류가 발생했어요. 잠시 후 다시 시도해주세요.');
   }
   input.disabled=false; send.disabled=false; input.focus();
 }
