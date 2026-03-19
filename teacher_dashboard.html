@@ -252,6 +252,41 @@ const CONFIG = {
   ::-webkit-scrollbar { width:4px; height:4px; }
   ::-webkit-scrollbar-track { background:transparent; }
   ::-webkit-scrollbar-thumb { background:var(--pink-200); border-radius:4px; }
+
+  /* ── 모달 공통 ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(30,20,24,0.35); backdrop-filter:blur(4px); z-index:500; align-items:center; justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:var(--radius); padding:22px 24px; width:340px; box-shadow:0 8px 40px rgba(200,100,120,0.2); border:1px solid var(--pink-200); }
+  .modal-title { font-size:13px; font-weight:700; color:var(--gray-800); margin-bottom:14px; }
+  .modal input[type=text] { width:100%; border:1px solid var(--pink-200); border-radius:8px; padding:7px 10px; font-size:12px; font-family:'Noto Sans KR',sans-serif; color:var(--gray-800); outline:none; margin-bottom:8px; transition:border 0.15s; box-sizing:border-box; }
+  .modal input[type=text]:focus { border-color:var(--pink-400); }
+  .modal-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:6px; }
+  .btn-cancel { background:var(--gray-100); border:none; border-radius:8px; padding:7px 14px; font-size:12px; cursor:pointer; color:var(--gray-600); font-family:'Noto Sans KR',sans-serif; }
+  .btn-confirm { background:linear-gradient(135deg,var(--pink-300),var(--rose)); border:none; border-radius:8px; padding:7px 14px; font-size:12px; cursor:pointer; color:#fff; font-weight:600; font-family:'Noto Sans KR',sans-serif; }
+  .btn-cancel:hover { background:var(--gray-200); }
+  .btn-confirm:hover { opacity:0.9; }
+
+  /* ── 할 일 ── */
+  .todo-add-btn { width:100%; background:var(--pink-100); border:1px dashed var(--pink-300); border-radius:8px; padding:5px; font-size:11px; color:var(--pink-400); cursor:pointer; margin-top:6px; font-family:'Noto Sans KR',sans-serif; }
+  .todo-add-btn:hover { background:var(--pink-200); }
+  .todo-del { background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:13px; padding:0 2px; flex-shrink:0; }
+  .todo-del:hover { color:var(--rose); }
+
+  /* ── 파일 관리 ── */
+  .file-item .file-del { margin-left:auto; background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:12px; padding:0 2px; flex-shrink:0; opacity:0; transition:opacity 0.15s; }
+  .file-item:hover .file-del { opacity:1; }
+  .file-add-btn { width:100%; background:transparent; border:1px dashed var(--pink-200); border-radius:8px; padding:4px; font-size:10px; color:var(--pink-300); cursor:pointer; margin-top:4px; font-family:'Noto Sans KR',sans-serif; }
+  .file-add-btn:hover { background:var(--pink-100); }
+
+  /* ── 퀵메뉴 편집 ── */
+  .quick-edit-btn { width:100%; background:var(--pink-100); border:1px dashed var(--pink-200); border-radius:8px; padding:4px; font-size:10px; color:var(--pink-300); cursor:pointer; margin-top:4px; font-family:'Noto Sans KR',sans-serif; }
+  .quick-edit-btn:hover { background:var(--pink-200); }
+  .quick-menu-row { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .quick-menu-row input { flex:1; }
+  .quick-menu-row .emoji-input { width:48px !important; text-align:center; flex:none; }
+  .quick-menu-row .del-row { background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:14px; }
+  .quick-menu-row .del-row:hover { color:var(--rose); }
+  .add-row-btn { width:100%; background:var(--pink-100); border:1px dashed var(--pink-200); border-radius:6px; padding:4px; font-size:11px; color:var(--pink-400); cursor:pointer; margin-bottom:8px; font-family:'Noto Sans KR',sans-serif; }
 </style>
 </head>
 <body>
@@ -271,21 +306,19 @@ const CONFIG = {
     <div class="card" style="padding:14px 14px 10px;">
       <div class="card-title"><span>📁</span> 파일 관리</div>
       <div class="file-zone zone-urgent" style="margin-bottom:8px;">
-        <div class="file-zone-title">🚨 긴급 <span class="badge">2</span></div>
-        <div class="file-item"><span class="file-icon">📝</span><span class="file-name">평가계획서_초안.docx</span><span class="file-date">오늘</span></div>
-        <div class="file-item"><span class="file-icon">📊</span><span class="file-name">성적처리_마감.xlsx</span><span class="file-date">내일</span></div>
-        <div class="drop-hint">여기에 드래그 앤 드롭 ↓</div>
+        <div class="file-zone-title">🚨 긴급 <span class="badge" id="badge-urgent">0</span></div>
+        <div id="files-urgent"></div>
+        <button class="file-add-btn" onclick="openFileModal('urgent')">+ 항목 추가</button>
       </div>
       <div class="file-zone zone-inprogress" style="margin-bottom:8px;">
-        <div class="file-zone-title">⚙️ 진행 중 <span class="badge" style="background:var(--pink-400);">3</span></div>
-        <div class="file-item"><span class="file-icon">🖼️</span><span class="file-name">수업자료_3학년.pptx</span><span class="file-date">03/18</span></div>
-        <div class="file-item"><span class="file-icon">📋</span><span class="file-name">학급일지_3월.pdf</span><span class="file-date">03/17</span></div>
-        <div class="file-item"><span class="file-icon">📎</span><span class="file-name">가정통신문_초안.hwp</span><span class="file-date">03/16</span></div>
+        <div class="file-zone-title">⚙️ 진행 중 <span class="badge" style="background:var(--pink-400);" id="badge-inprogress">0</span></div>
+        <div id="files-inprogress"></div>
+        <button class="file-add-btn" onclick="openFileModal('inprogress')">+ 항목 추가</button>
       </div>
       <div class="file-zone zone-later">
-        <div class="file-zone-title">🗂️ 나중에 볼 파일 <span class="badge" style="background:var(--gray-400);">2</span></div>
-        <div class="file-item"><span class="file-icon">📸</span><span class="file-name">현장학습_사진모음.zip</span><span class="file-date">03/12</span></div>
-        <div class="file-item"><span class="file-icon">📄</span><span class="file-name">연구보고서_참고.pdf</span><span class="file-date">03/10</span></div>
+        <div class="file-zone-title">🗂️ 나중에 볼 파일 <span class="badge" style="background:var(--gray-400);" id="badge-later">0</span></div>
+        <div id="files-later"></div>
+        <button class="file-add-btn" onclick="openFileModal('later')">+ 항목 추가</button>
       </div>
     </div>
   </div>
@@ -315,14 +348,8 @@ const CONFIG = {
   <div class="widgets">
     <div class="card">
       <div class="card-title"><span>🔗</span> 퀵 메뉴</div>
-      <div class="quick-menu">
-        <a class="quick-btn" title="홈" href="#">🏠</a>
-        <a class="quick-btn" title="구글 캘린더" href="https://calendar.google.com" target="_blank">📅</a>
-        <a class="quick-btn" title="구글 드라이브" href="https://drive.google.com" target="_blank">💾</a>
-        <a class="quick-btn" title="연락처" href="#">👥</a>
-        <a class="quick-btn" title="클래스룸" href="https://classroom.google.com" target="_blank">🎓</a>
-        <a class="quick-btn" title="설정" href="#">⚙️</a>
-      </div>
+      <div class="quick-menu" id="quick-menu-btns"></div>
+      <button class="quick-edit-btn" onclick="openQuickModal()">✏️ 링크 편집</button>
     </div>
     <div class="card" style="padding:14px;">
       <div class="card-title"><span>🌤️</span> 날씨 · 환경</div>
@@ -376,12 +403,8 @@ const CONFIG = {
     </div>
     <div class="card" style="padding:13px;">
       <div class="card-title"><span>✅</span> 할 일 (To-Do)</div>
-      <div id="todo-list">
-        <label class="todo-item"><input type="checkbox"><span>평가계획서 작성</span><span class="todo-time">마감 내일</span></label>
-        <label class="todo-item done"><input type="checkbox" checked><span>조례 출석 확인</span><span class="todo-time">완료</span></label>
-        <label class="todo-item"><input type="checkbox"><span>17시 하원 지도</span><span class="todo-time">17:00</span></label>
-        <label class="todo-item"><input type="checkbox"><span>가정통신문 배부</span><span class="todo-time">오늘 중</span></label>
-      </div>
+      <div id="todo-list"></div>
+      <button class="todo-add-btn" onclick="openTodoModal()">+ 할 일 추가</button>
     </div>
     <div class="card" style="padding:13px;flex-grow:1;">
       <div class="card-title"><span>📝</span> 메모장</div>
@@ -392,6 +415,46 @@ const CONFIG = {
     </div>
   </div>
 
+</div>
+
+<!-- ── 모달: 할 일 추가 ── -->
+<div class="modal-overlay" id="modal-todo">
+  <div class="modal">
+    <div class="modal-title">✅ 할 일 추가</div>
+    <input type="text" id="todo-input-text" placeholder="할 일 내용" />
+    <input type="text" id="todo-input-time" placeholder="시간/메모 (예: 17:00, 오늘 중)" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-todo')">취소</button>
+      <button class="btn-confirm" onclick="addTodo()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 파일 추가 ── -->
+<div class="modal-overlay" id="modal-file">
+  <div class="modal">
+    <div class="modal-title">📁 파일 항목 추가</div>
+    <input type="text" id="file-input-icon" placeholder="아이콘 이모지 (예: 📝)" />
+    <input type="text" id="file-input-name" placeholder="파일명" />
+    <input type="text" id="file-input-date" placeholder="날짜 (예: 오늘, 03/25)" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-file')">취소</button>
+      <button class="btn-confirm" onclick="addFileItem()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 모달: 퀵메뉴 편집 ── -->
+<div class="modal-overlay" id="modal-quick">
+  <div class="modal" style="width:380px;">
+    <div class="modal-title">🔗 퀵메뉴 링크 편집</div>
+    <div id="quick-edit-rows"></div>
+    <button class="add-row-btn" onclick="addQuickRow()">+ 버튼 추가</button>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-quick')">취소</button>
+      <button class="btn-confirm" onclick="saveQuickMenu()">저장</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -716,12 +779,190 @@ setInterval(fetchWeather, 30 * 60 * 1000); // 30분마다 갱신
 
 
 /* ============================================================
-   ⑧ To-Do 체크박스
+   ⑧ 할 일 (To-Do) — 추가/삭제/체크 + localStorage 저장
    ============================================================ */
-document.querySelectorAll('#todo-list input[type=checkbox]').forEach(cb => {
-  cb.addEventListener('change', function() {
-    this.closest('.todo-item').classList.toggle('done', this.checked);
+let todos = JSON.parse(localStorage.getItem('kimju_todos') || '[]');
+if (todos.length === 0) {
+  todos = [
+    { text:'평가계획서 작성', time:'마감 내일', done:false },
+    { text:'조례 출석 확인', time:'완료', done:true },
+    { text:'17시 하원 지도', time:'17:00', done:false },
+    { text:'가정통신문 배부', time:'오늘 중', done:false },
+  ];
+}
+
+function saveTodos() { localStorage.setItem('kimju_todos', JSON.stringify(todos)); }
+
+function renderTodos() {
+  const el = document.getElementById('todo-list');
+  el.innerHTML = todos.map((t, i) => `
+    <label class="todo-item ${t.done ? 'done' : ''}" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--pink-100);font-size:11px;color:var(--gray-800);cursor:pointer;">
+      <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${i})" style="accent-color:var(--rose);width:13px;height:13px;">
+      <span>${t.text}</span>
+      <span class="todo-time" style="margin-left:auto;font-size:9.5px;color:var(--pink-400);font-weight:600;font-family:'JetBrains Mono',monospace;">${t.time}</span>
+      <button class="todo-del" onclick="deleteTodo(event,${i})" title="삭제">✕</button>
+    </label>`).join('');
+}
+
+function toggleTodo(i) {
+  todos[i].done = !todos[i].done;
+  saveTodos(); renderTodos();
+}
+function deleteTodo(e, i) {
+  e.preventDefault(); e.stopPropagation();
+  todos.splice(i, 1);
+  saveTodos(); renderTodos();
+}
+function openTodoModal() {
+  document.getElementById('todo-input-text').value = '';
+  document.getElementById('todo-input-time').value = '';
+  document.getElementById('modal-todo').classList.add('show');
+  document.getElementById('todo-input-text').focus();
+}
+function addTodo() {
+  const text = document.getElementById('todo-input-text').value.trim();
+  const time = document.getElementById('todo-input-time').value.trim() || '';
+  if (!text) return;
+  todos.push({ text, time, done: false });
+  saveTodos(); renderTodos();
+  closeModal('modal-todo');
+}
+
+renderTodos();
+
+
+/* ============================================================
+   ⑨ 파일 관리 — 추가/삭제 + localStorage 저장
+   ============================================================ */
+const FILE_ICONS = { urgent:'📝', inprogress:'🖼️', later:'📄' };
+let fileZones = JSON.parse(localStorage.getItem('kimju_files') || 'null') || {
+  urgent:     [{ icon:'📝', name:'평가계획서_초안.docx', date:'오늘' }, { icon:'📊', name:'성적처리_마감.xlsx', date:'내일' }],
+  inprogress: [{ icon:'🖼️', name:'수업자료_3학년.pptx', date:'03/18' }, { icon:'📋', name:'학급일지_3월.pdf', date:'03/17' }],
+  later:      [{ icon:'📸', name:'현장학습_사진모음.zip', date:'03/12' }],
+};
+let currentFileZone = '';
+
+function saveFiles() { localStorage.setItem('kimju_files', JSON.stringify(fileZones)); }
+
+function renderFiles() {
+  ['urgent','inprogress','later'].forEach(zone => {
+    const el = document.getElementById(`files-${zone}`);
+    el.innerHTML = fileZones[zone].map((f, i) => `
+      <div class="file-item">
+        <span style="font-size:14px;">${f.icon}</span>
+        <span class="file-name">${f.name}</span>
+        <span class="file-date">${f.date}</span>
+        <button class="file-del" onclick="deleteFile('${zone}',${i})" title="삭제">✕</button>
+      </div>`).join('');
+    document.getElementById(`badge-${zone}`).textContent = fileZones[zone].length;
   });
+}
+
+function deleteFile(zone, i) {
+  fileZones[zone].splice(i, 1);
+  saveFiles(); renderFiles();
+}
+function openFileModal(zone) {
+  currentFileZone = zone;
+  document.getElementById('file-input-icon').value = FILE_ICONS[zone] || '📄';
+  document.getElementById('file-input-name').value = '';
+  document.getElementById('file-input-date').value = '';
+  document.getElementById('modal-file').classList.add('show');
+  document.getElementById('file-input-name').focus();
+}
+function addFileItem() {
+  const icon = document.getElementById('file-input-icon').value.trim() || '📄';
+  const name = document.getElementById('file-input-name').value.trim();
+  const date = document.getElementById('file-input-date').value.trim() || '오늘';
+  if (!name) return;
+  fileZones[currentFileZone].push({ icon, name, date });
+  saveFiles(); renderFiles();
+  closeModal('modal-file');
+}
+
+renderFiles();
+
+
+/* ============================================================
+   ⑩ 퀵메뉴 — 링크 편집 + localStorage 저장
+   ============================================================ */
+let quickLinks = JSON.parse(localStorage.getItem('kimju_quick') || 'null') || [
+  { emoji:'🏠', label:'홈', url:'#' },
+  { emoji:'📅', label:'구글 캘린더', url:'https://calendar.google.com' },
+  { emoji:'💾', label:'구글 드라이브', url:'https://drive.google.com' },
+  { emoji:'👥', label:'연락처', url:'#' },
+  { emoji:'🎓', label:'클래스룸', url:'https://classroom.google.com' },
+  { emoji:'⚙️', label:'설정', url:'#' },
+];
+
+function saveQuickLinks() { localStorage.setItem('kimju_quick', JSON.stringify(quickLinks)); }
+
+function renderQuickMenu() {
+  const el = document.getElementById('quick-menu-btns');
+  el.innerHTML = quickLinks.map(q => `
+    <a class="quick-btn" title="${q.label}" href="${q.url}" target="${q.url === '#' ? '_self' : '_blank'}">${q.emoji}</a>
+  `).join('');
+}
+
+function openQuickModal() {
+  const rows = document.getElementById('quick-edit-rows');
+  rows.innerHTML = quickLinks.map((q, i) => `
+    <div class="quick-menu-row">
+      <input type="text" class="emoji-input" value="${q.emoji}" placeholder="🔗" id="qe-${i}" style="width:48px;text-align:center;">
+      <input type="text" value="${q.label}" placeholder="이름" id="ql-${i}" style="flex:1;">
+      <input type="text" value="${q.url}" placeholder="https://..." id="qu-${i}" style="flex:2;">
+      <button class="del-row" onclick="removeQuickRow(${i})">✕</button>
+    </div>`).join('');
+  document.getElementById('modal-quick').classList.add('show');
+}
+
+function addQuickRow() {
+  const rows = document.getElementById('quick-edit-rows');
+  const i = rows.children.length;
+  const div = document.createElement('div');
+  div.className = 'quick-menu-row';
+  div.innerHTML = `
+    <input type="text" class="emoji-input" placeholder="🔗" id="qe-${i}" style="width:48px;text-align:center;">
+    <input type="text" placeholder="이름" id="ql-${i}" style="flex:1;">
+    <input type="text" placeholder="https://..." id="qu-${i}" style="flex:2;">
+    <button class="del-row" onclick="this.closest('.quick-menu-row').remove()">✕</button>`;
+  rows.appendChild(div);
+}
+
+function removeQuickRow(i) {
+  document.getElementById('quick-edit-rows').children[i]?.remove();
+}
+
+function saveQuickMenu() {
+  const rows = document.getElementById('quick-edit-rows');
+  quickLinks = Array.from(rows.children).map((row, i) => ({
+    emoji: row.querySelector(`[id^="qe"]`)?.value.trim() || '🔗',
+    label: row.querySelector(`[id^="ql"]`)?.value.trim() || '',
+    url:   row.querySelector(`[id^="qu"]`)?.value.trim() || '#',
+  })).filter(q => q.label);
+  saveQuickLinks();
+  renderQuickMenu();
+  closeModal('modal-quick');
+}
+
+renderQuickMenu();
+
+
+/* ============================================================
+   공통 모달 닫기 / Enter 키 지원
+   ============================================================ */
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+  if (e.key === 'Enter') {
+    if (document.getElementById('modal-todo').classList.contains('show')) addTodo();
+    if (document.getElementById('modal-file').classList.contains('show')) addFileItem();
+  }
 });
 </script>
 </body>
