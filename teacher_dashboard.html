@@ -130,7 +130,7 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
 /* 조퇴 안내 */
-.leave-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(200,82,106,0.1); border:1px solid var(--rose-md); border-radius:8px; padding:3px 10px; font-size:12px; font-weight:600; color:var(--rose); margin-top:5px; }
+.leave-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(200,82,106,0.1); border:1px solid var(--rose-md); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; color:var(--rose); white-space:nowrap; }
 
 /* 시간표 + 급식 나란히 */
 .sched-body { flex:1; display:flex; gap:10px; overflow:hidden; min-height:0; }
@@ -318,9 +318,11 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); height:100vh
       <div>
         <div class="clock-time"><span id="hh">--</span><span class="blink">:</span><span id="mm">--</span></div>
         <div class="clock-date" id="clock-date">로딩 중...</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-top:4px;">
+        <div class="now-pill"><div class="now-dot"></div><span id="now-status">--</span></div>
         <div id="leave-info"></div>
       </div>
-      <div class="now-pill"><div class="now-dot"></div><span id="now-status">--</span></div>
     </div>
     <div class="sched-body">
       <div class="tt-wrap"><table class="tt" id="tt"></table></div>
