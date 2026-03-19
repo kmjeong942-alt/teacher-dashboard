@@ -1,1 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kimju.zip — 교사 전용 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
+<script>
+/* ============================================================
+   ★ 설정 블록 — 여기만 수정하면 됩니다 ★
+   ============================================================ */
+const CONFIG = {
+
+  // ── NEIS 급식 API ──────────────────────────────────────────
+  // 1. https://open.neis.go.kr 에서 회원가입 후 API 키 발급
+  // 2. https://open.neis.go.kr/portal/data/service/selectServicePage.do?infId=OPEN17320190722180924242823
+  //    에서 학교코드 조회 (학교명으로 검색)
+  NEIS_API_KEY:   'c96838e8f2e645c58c1b40020c89e7b1',   // ← 발급받은 NEIS API 키
+  NEIS_REGION:    'J10',                 // ← 경기=J10
+  NEIS_SCHOOL_CODE: '7530881',           // ← 학교코드
+  // 지역코드: 서울B10 부산C10 대구D10 인천E10 광주F10 대전G10 울산H10
+  //           세종I10 경기J10 강원K10 충북M10 충남N10 전북P10 전남Q10
+  //           경북R10 경남S10 제주T10
+
+  // ── D-Day 목록 ──────────────────────────────────────────────
+  // 날짜 형식: 'YYYY-MM-DD'
+  DDAYS: [
+    { label: '☀️ 여름방학', date: '2026-07-21' },
+    { label: '❄️ 겨울방학', date: '2027-01-06' },
+  ],
+
+  // ── Google Sheets 전광판 연동 ────────────────────────────────
+  // 1. Google Cloud Console → Sheets API 활성화 → API 키 발급
+  // 2. Google Sheets 파일 생성 → A1 셀에 공지 입력 → 링크 공개 설정
+  // 3. URL에서 /d/ 와 /edit 사이 문자열이 SHEET_ID
+  SHEETS_API_KEY: 'YOUR_GOOGLE_API_KEY', // ← Google API 키
+  SHEET_ID:       'YOUR_SHEET_ID',       // ← Google Sheets ID
+  SHEET_RANGE:    'A1',                  // ← 공지 텍스트가 있는 셀
+  SHEET_POLL_SEC: 20,                    // ← 갱신 주기(초)
+
+  // ── 시간표 ──────────────────────────────────────────────────
+  // 요일 자동 감지 → today-col/active-cell 자동 적용됨
+  // 수업 없는 날은 '—' 으로 입력
+  TIMETABLE: [
+    //        월           화       수          목          금
+    /* 1교시 */ ['',       '수학',  '',         '',         ''],
+    /* 2교시 */ ['제과제빵', '',     '수학',     '수학',     ''],
+    /* 3교시 */ ['제과제빵', '수학', '',         '컴퓨터',   '수학'],
+    /* 4교시 */ ['제과제빵', '수학', '수학',     '수학',     ''],
+    /* 5교시 */ ['제과제빵', '',     '',         '수학',     '수학'],
+    /* 6교시 */ ['',        '창체', '',         '',         '수학'],
+    /* 7교시 */ ['—',       '',     '—',        '창체',     '—'],
+  ],
+
+  // ── 교시 시간 설정 ───────────────────────────────────────────
+  PERIODS: [
+    { label: '1교시', start: '09:00', end: '09:50' },
+    { label: '2교시', start: '10:00', end: '10:50' },
+    { label: '3교시', start: '11:00', end: '11:50' },
+    { label: '4교시', start: '12:00', end: '12:50' },
+    { label: '점심',  start: '12:50', end: '13:50', isLunch: true },
+    { label: '5교시', start: '13:50', end: '14:40' },
+    { label: '6교시', start: '14:50', end: '15:40' },
+    { label: '7교시', start: '15:50', end: '16:40' },
+  ],
+};
+/* ============================================================ */
+</script>
+
+<style>
+  :root {
+    --pink-100: #fff0f3;
+    --pink-200: #ffd6df;
+    --pink-300: #ffb3c6;
+    --pink-400: #ff85a1;
+    --rose: #e8647a;
+    --white: #ffffff;
+    --gray-100: #f8f4f5;
+    --gray-200: #ede8e9;
+    --gray-400: #b0a4a7;
+    --gray-600: #7a6a6d;
+    --gray-800: #3d2f31;
+    --dark: #1e1418;
+    --shadow-card: 0 4px 24px rgba(200,100,120,0.12);
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--pink-100);
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed; top: -120px; left: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,180,200,0.35) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed; bottom: -100px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,200,215,0.3) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ANNOUNCEMENT BAR */
+  .announcement-bar {
+    position: fixed; top: 0; left: 0; right: 0; height: 32px;
+    background: linear-gradient(90deg, var(--rose), var(--pink-400), var(--rose));
+    background-size: 200% 100%;
+    animation: gradShift 6s ease infinite;
+    display: flex; align-items: center; overflow: hidden;
+    z-index: 100; box-shadow: 0 2px 12px rgba(232,100,122,0.25);
+  }
+  @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  .ticker-wrap { display:flex; align-items:center; white-space:nowrap; animation: ticker 32s linear infinite; }
+  @keyframes ticker { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
+  .ticker-text { font-size:12px; font-weight:600; color:#fff; letter-spacing:0.04em; padding-right:80px; }
+  .ticker-icon { margin-right:10px; font-size:13px; }
+
+  /* LAYOUT */
+  .dashboard {
+    position: relative; z-index: 1; margin-top: 32px;
+    padding: 14px 16px 10px;
+    display: grid;
+    grid-template-columns: 260px 1fr 240px;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    height: calc(100vh - 32px);
+  }
+
+  /* CARD */
+  .card {
+    background: rgba(255,255,255,0.82); backdrop-filter: blur(12px);
+    border-radius: var(--radius); padding: 16px;
+    box-shadow: var(--shadow-card); border: 1px solid rgba(255,182,193,0.25);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(200,100,120,0.16); }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--pink-300), transparent);
+    opacity:0.6;
+  }
+  .card-title {
+    font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--pink-400); margin-bottom:12px; display:flex; align-items:center; gap:6px;
+  }
+  .card-title::before { content:''; width:3px; height:12px; background:var(--pink-400); border-radius:2px; flex-shrink:0; }
+
+  /* FILE ORGANIZER */
+  .file-organizer { grid-column:1; grid-row:1/3; display:flex; flex-direction:column; gap:10px; }
+  .file-zone { border-radius:var(--radius-sm); padding:10px 12px; flex:1; display:flex; flex-direction:column; min-height:0; }
+  .file-zone-title { font-size:11px; font-weight:700; color:var(--gray-800); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .file-zone-title .badge { background:var(--pink-300); color:#fff; border-radius:8px; padding:1px 7px; font-size:10px; }
+  .zone-urgent { background:rgba(255,180,198,0.2); border:2px dashed var(--pink-300); }
+  .zone-inprogress { background:rgba(255,240,243,0.8); border:1px solid var(--pink-200); }
+  .zone-later { background:rgba(248,244,245,0.9); border:1px solid var(--gray-200); }
+  .file-item { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.75); margin-bottom:5px; font-size:11px; color:var(--gray-800); border:1px solid rgba(255,182,193,0.2); cursor:pointer; transition:background 0.15s; }
+  .file-item:hover { background:var(--pink-100); }
+  .file-item .file-name { flex:1; font-weight:500; }
+  .file-item .file-date { font-size:9px; color:var(--gray-400); }
+  .drop-hint { text-align:center; color:var(--pink-300); font-size:10px; padding:12px 0; font-style:italic; }
+
+  /* SCHEDULER */
+  .scheduler { grid-column:2; grid-row:1; }
+  .scheduler-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+  .clock-block .time-display { font-family:'JetBrains Mono',monospace; font-size:42px; font-weight:600; color:var(--dark); line-height:1; letter-spacing:-0.02em; }
+  .clock-block .time-display .colon { animation:blink 1s step-end infinite; }
+  @keyframes blink { 50%{opacity:0} }
+  .clock-block .date-display { font-size:12px; color:var(--gray-600); margin-top:4px; font-weight:500; }
+  .status-pill { background:linear-gradient(135deg,var(--pink-300),var(--rose)); color:white; border-radius:20px; padding:6px 14px; font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; box-shadow:0 3px 12px rgba(232,100,122,0.3); white-space:nowrap; margin-top:4px; }
+  .status-pill .status-dot { width:7px; height:7px; background:#fff; border-radius:50%; animation:pulse 2s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.75)} }
+
+  /* TIMETABLE */
+  .timetable-wrap { overflow:auto; margin-top:8px; }
+  .timetable { width:100%; border-collapse:separate; border-spacing:3px; font-size:10.5px; }
+  .timetable th { background:var(--pink-200); color:var(--rose); font-weight:700; text-align:center; padding:5px 3px; border-radius:6px; font-size:10px; letter-spacing:0.05em; }
+  .timetable th.today-header { background:var(--pink-300); color:#fff; }
+  .timetable .period-label { background:var(--gray-100); color:var(--gray-600); font-weight:600; text-align:center; padding:5px; border-radius:6px; font-size:9px; white-space:nowrap; }
+  .timetable td { background:rgba(255,255,255,0.7); color:var(--gray-800); text-align:center; padding:5px 4px; border-radius:6px; font-size:9.5px; font-weight:500; white-space:nowrap; }
+  .timetable td:hover { background:var(--pink-100); }
+  .timetable .today-col { background:rgba(255,210,222,0.35) !important; }
+  .timetable .active-cell { background:linear-gradient(135deg,var(--pink-300),var(--rose)) !important; color:#fff !important; font-weight:700; box-shadow:0 2px 8px rgba(232,100,122,0.35); }
+  .timetable .lunch-row td { background:rgba(255,182,193,0.15); color:var(--pink-400); font-weight:600; font-size:10px; text-align:center; }
+
+  /* WIDGETS */
+  .widgets { grid-column:3; grid-row:1; display:flex; flex-direction:column; gap:10px; }
+  .quick-menu { display:flex; justify-content:space-around; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
+  .quick-btn { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--pink-200),var(--pink-300)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow:0 3px 10px rgba(200,100,120,0.2); transition:transform 0.15s, box-shadow 0.15s; text-decoration:none; }
+  .quick-btn:hover { transform:scale(1.12) translateY(-2px); box-shadow:0 5px 16px rgba(200,100,120,0.35); }
+  .weather-block { background:linear-gradient(135deg,rgba(255,182,193,0.3),rgba(255,240,243,0.8)); border-radius:var(--radius-sm); padding:12px; border:1px solid var(--pink-200); }
+  .weather-main { display:flex; align-items:center; justify-content:space-between; }
+  .weather-temp-big { font-family:'JetBrains Mono',monospace; font-size:32px; font-weight:600; color:var(--dark); line-height:1; }
+  .weather-icon-big { font-size:32px; }
+  .weather-meta { margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+  .weather-tag { background:rgba(255,255,255,0.7); border-radius:8px; padding:4px 8px; font-size:9.5px; color:var(--gray-600); display:flex; align-items:center; gap:4px; font-weight:500; }
+  .weather-tag .tag-val { color:var(--dark); font-weight:700; }
+  .weather-tag.warn .tag-val { color:var(--rose); }
+
+  /* NOTICE & D-DAY */
+  .notice-section { grid-column:2; grid-row:2; display:flex; gap:12px; }
+  .dday-card { flex:0 0 150px; text-align:center; }
+  .dday-item { padding:6px 0; }
+  .dday-main { font-family:'DM Serif Display',serif; font-size:32px; color:var(--rose); line-height:1; margin:4px 0 2px; }
+  .dday-label { font-size:11px; color:var(--gray-600); font-weight:600; }
+  .dday-sub { font-size:10px; color:var(--gray-400); margin-top:2px; }
+  .dday-divider { border:none; border-top:1px solid var(--pink-200); margin:8px 0; }
+  .calendar-card { flex:1; }
+  .calendar-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .calendar-nav .month-label { font-size:13px; font-weight:700; color:var(--gray-800); }
+  .nav-btn { background:var(--pink-100); border:1px solid var(--pink-200); border-radius:6px; padding:3px 8px; cursor:pointer; font-size:12px; color:var(--rose); transition:background 0.15s; }
+  .nav-btn:hover { background:var(--pink-200); }
+  .event-list { list-style:none; }
+  .event-item { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--pink-100); font-size:11px; color:var(--gray-800); }
+  .event-item:last-child { border-bottom:none; }
+  .event-date { min-width:36px; background:var(--pink-200); color:var(--rose); font-size:10px; font-weight:700; padding:2px 5px; border-radius:6px; text-align:center; }
+  .event-name { flex:1; }
+  .event-tag { background:var(--pink-100); color:var(--rose); font-size:9px; padding:1px 5px; border-radius:6px; font-weight:600; }
+
+  /* LIFE & TASKS */
+  .life-tasks { grid-column:3; grid-row:2; display:flex; flex-direction:column; gap:10px; }
+  .meal-block { background:rgba(255,240,243,0.8); border-radius:var(--radius-sm); padding:10px; border:1px solid var(--pink-200); }
+  .meal-list { list-style:none; }
+  .meal-item { font-size:10.5px; color:var(--gray-800); padding:3px 0; border-bottom:1px dashed var(--pink-200); display:flex; align-items:center; gap:5px; }
+  .meal-item:last-child { border-bottom:none; }
+  .meal-item::before { content:'•'; color:var(--pink-300); }
+  .meal-kcal { text-align:right; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gray-400); margin-top:5px; font-weight:600; }
+  .meal-loading { font-size:11px; color:var(--gray-400); text-align:center; padding:8px 0; font-style:italic; }
+  .todo-item { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--pink-100); font-size:11px; color:var(--gray-800); cursor:pointer; }
+  .todo-item:last-child { border-bottom:none; }
+  .todo-item input[type=checkbox] { accent-color:var(--rose); width:13px; height:13px; cursor:pointer; }
+  .todo-item.done span { text-decoration:line-through; color:var(--gray-400); }
+  .todo-time { margin-left:auto; font-size:9.5px; color:var(--pink-400); font-weight:600; font-family:'JetBrains Mono',monospace; }
+  .memo-block { background:rgba(255,240,243,0.6); border-radius:var(--radius-sm); padding:10px; border:1px solid var(--pink-200); }
+  .memo-label { font-size:9px; letter-spacing:0.1em; font-weight:700; color:var(--pink-300); text-transform:uppercase; margin-bottom:5px; }
+  .memo-area { width:100%; background:transparent; border:none; resize:none; font-family:'Noto Sans KR',sans-serif; font-size:11px; color:var(--gray-800); line-height:1.6; outline:none; min-height:48px; }
+  .memo-area::placeholder { color:var(--pink-300); font-style:italic; }
+
+  /* API 설정 안내 배너 */
+  .setup-notice { background:rgba(255,230,100,0.25); border:1px dashed #e8c84a; border-radius:8px; padding:5px 10px; font-size:10px; color:#8a6e00; margin-top:6px; display:none; }
+  .setup-notice.show { display:block; }
+
+  ::-webkit-scrollbar { width:4px; height:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--pink-200); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar">
+  <div class="ticker-wrap">
+    <span class="ticker-icon">📢</span>
+    <span class="ticker-text" id="ticker-text">kimju.zip 로딩 중...</span>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- A. FILE ORGANIZER -->
+  <div class="file-organizer">
+    <div class="card" style="padding:14px 14px 10px;">
+      <div class="card-title"><span>📁</span> 파일 관리</div>
+      <div class="file-zone zone-urgent" style="margin-bottom:8px;">
+        <div class="file-zone-title">🚨 긴급 <span class="badge">2</span></div>
+        <div class="file-item"><span class="file-icon">📝</span><span class="file-name">평가계획서_초안.docx</span><span class="file-date">오늘</span></div>
+        <div class="file-item"><span class="file-icon">📊</span><span class="file-name">성적처리_마감.xlsx</span><span class="file-date">내일</span></div>
+        <div class="drop-hint">여기에 드래그 앤 드롭 ↓</div>
+      </div>
+      <div class="file-zone zone-inprogress" style="margin-bottom:8px;">
+        <div class="file-zone-title">⚙️ 진행 중 <span class="badge" style="background:var(--pink-400);">3</span></div>
+        <div class="file-item"><span class="file-icon">🖼️</span><span class="file-name">수업자료_3학년.pptx</span><span class="file-date">03/18</span></div>
+        <div class="file-item"><span class="file-icon">📋</span><span class="file-name">학급일지_3월.pdf</span><span class="file-date">03/17</span></div>
+        <div class="file-item"><span class="file-icon">📎</span><span class="file-name">가정통신문_초안.hwp</span><span class="file-date">03/16</span></div>
+      </div>
+      <div class="file-zone zone-later">
+        <div class="file-zone-title">🗂️ 나중에 볼 파일 <span class="badge" style="background:var(--gray-400);">2</span></div>
+        <div class="file-item"><span class="file-icon">📸</span><span class="file-name">현장학습_사진모음.zip</span><span class="file-date">03/12</span></div>
+        <div class="file-item"><span class="file-icon">📄</span><span class="file-name">연구보고서_참고.pdf</span><span class="file-date">03/10</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. SCHEDULER -->
+  <div class="scheduler card">
+    <div class="scheduler-header">
+      <div class="clock-block">
+        <div class="time-display">
+          <span id="hh">--</span><span class="colon">:</span><span id="mm">--</span>
+        </div>
+        <div class="date-display" id="date-display">로딩 중...</div>
+      </div>
+      <div>
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          <span id="current-status">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="timetable-wrap">
+      <table class="timetable" id="timetable"></table>
+    </div>
+  </div>
+
+  <!-- C. WIDGETS -->
+  <div class="widgets">
+    <div class="card">
+      <div class="card-title"><span>🔗</span> 퀵 메뉴</div>
+      <div class="quick-menu">
+        <a class="quick-btn" title="홈" href="#">🏠</a>
+        <a class="quick-btn" title="구글 캘린더" href="https://calendar.google.com" target="_blank">📅</a>
+        <a class="quick-btn" title="구글 드라이브" href="https://drive.google.com" target="_blank">💾</a>
+        <a class="quick-btn" title="연락처" href="#">👥</a>
+        <a class="quick-btn" title="클래스룸" href="https://classroom.google.com" target="_blank">🎓</a>
+        <a class="quick-btn" title="설정" href="#">⚙️</a>
+      </div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div class="card-title"><span>🌤️</span> 날씨 · 환경</div>
+      <div class="weather-block">
+        <div class="weather-main">
+          <div>
+            <div class="weather-temp-big" id="w-temp">--°</div>
+            <div style="font-size:10px;color:var(--gray-600);margin-top:3px;" id="w-desc">경기 · 로딩 중</div>
+          </div>
+          <div class="weather-icon-big" id="w-icon">🌡️</div>
+        </div>
+        <div class="weather-meta">
+          <div class="weather-tag">최고 <span class="tag-val" id="w-max">--°</span></div>
+          <div class="weather-tag">최저 <span class="tag-val" id="w-min">--°</span></div>
+          <div class="weather-tag warn">미세먼지 <span class="tag-val warn" id="w-pm10">--</span></div>
+          <div class="weather-tag">초미세먼지 <span class="tag-val" id="w-pm25">--</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D. NOTICE & D-DAY -->
+  <div class="notice-section">
+    <div class="card dday-card">
+      <div class="card-title"><span>📆</span> D-Day</div>
+      <div id="dday-container"></div>
+    </div>
+    <div class="card calendar-card">
+      <div class="calendar-nav">
+        <button class="nav-btn" id="cal-prev">‹</button>
+        <span class="month-label" id="cal-month-label">📅 -- 년 -- 월 학사일정</span>
+        <button class="nav-btn" id="cal-next">›</button>
+      </div>
+      <ul class="event-list" id="event-list">
+        <li class="event-item" style="color:var(--gray-400);font-style:italic;">NEIS 학사일정 로딩 중...</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- E. LIFE & TASKS -->
+  <div class="life-tasks">
+    <div class="card" style="padding:13px;">
+      <div class="card-title"><span>🍱</span> 오늘의 급식</div>
+      <div class="meal-block">
+        <ul class="meal-list" id="meal-list">
+          <li class="meal-loading">급식 정보 불러오는 중...</li>
+        </ul>
+        <div class="meal-kcal" id="meal-kcal"></div>
+      </div>
+      <div class="setup-notice" id="meal-notice">⚠️ NEIS API 키 또는 학교코드를 설정하세요 (CONFIG 블록)</div>
+    </div>
+    <div class="card" style="padding:13px;">
+      <div class="card-title"><span>✅</span> 할 일 (To-Do)</div>
+      <div id="todo-list">
+        <label class="todo-item"><input type="checkbox"><span>평가계획서 작성</span><span class="todo-time">마감 내일</span></label>
+        <label class="todo-item done"><input type="checkbox" checked><span>조례 출석 확인</span><span class="todo-time">완료</span></label>
+        <label class="todo-item"><input type="checkbox"><span>17시 하원 지도</span><span class="todo-time">17:00</span></label>
+        <label class="todo-item"><input type="checkbox"><span>가정통신문 배부</span><span class="todo-time">오늘 중</span></label>
+      </div>
+    </div>
+    <div class="card" style="padding:13px;flex-grow:1;">
+      <div class="card-title"><span>📝</span> 메모장</div>
+      <div class="memo-block">
+        <div class="memo-label">NOW AND HERE</div>
+        <textarea class="memo-area" placeholder="지금 이 순간 메모..."></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   ① 시계 + 날짜 + 오늘 요일 자동 감지
+   ============================================================ */
+function updateClock() {
+  const now = new Date();
+  document.getElementById('hh').textContent = String(now.getHours()).padStart(2,'0');
+  document.getElementById('mm').textContent = String(now.getMinutes()).padStart(2,'0');
+
+  const days = ['일','월','화','수','목','금','토'];
+  const { year:y, month:mo, date:d } = { year:now.getFullYear(), month:now.getMonth()+1, date:now.getDate() };
+  document.getElementById('date-display').textContent =
+    `${y}년 ${mo}월 ${d}일 (${days[now.getDay()]}요일)`;
+
+  updateStatus(now);
+}
+
+function toMin(h,m){ return h*60+m; }
+function parseTime(str){ const [h,m]=str.split(':').map(Number); return toMin(h,m); }
+
+function updateStatus(now) {
+  const cur = toMin(now.getHours(), now.getMinutes());
+  let found = '방과 후 시간 🏫';
+  for (const p of CONFIG.PERIODS) {
+    const s = parseTime(p.start), e = parseTime(p.end);
+    if (cur >= s && cur < e) {
+      found = p.isLunch
+        ? `점심시간 🍱 ${p.start}~${p.end}`
+        : `${p.label} 📖 ${p.start}~${p.end}`;
+      break;
+    }
+  }
+  document.getElementById('current-status').textContent = found;
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+
+/* ============================================================
+   ② 시간표 자동 렌더링 + 오늘 열·현재 교시 자동 강조
+   ============================================================ */
+function buildTimetable() {
+  const now = new Date();
+  const dow = now.getDay();           // 0=일,1=월,2=화,3=수,4=목,5=금,6=토
+  const todayCol = (dow >= 1 && dow <= 5) ? dow - 1 : -1; // 월=0 ~ 금=4, 주말=-1
+  const cur = toMin(now.getHours(), now.getMinutes());
+
+  // 헤더
+  const dayNames = ['월','화','수','목','금'];
+  let html = '<thead><tr><th>교시</th>';
+  dayNames.forEach((d,i) => {
+    html += i === todayCol
+      ? `<th class="today-header">${d} ★</th>`
+      : `<th>${d}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  // 교시 행 & 점심 행
+  let subjectIdx = 0; // CONFIG.TIMETABLE 인덱스 (점심 제외)
+  CONFIG.PERIODS.forEach(p => {
+    if (p.isLunch) {
+      html += `<tr class="lunch-row">
+        <td class="period-label" style="color:var(--pink-300);">🍱 점심<br><span style="font-size:8px;">${p.start}</span></td>
+        <td colspan="5">점심시간 (${p.start} ~ ${p.end})</td>
+      </tr>`;
+      return;
+    }
+    const s = parseTime(p.start), e = parseTime(p.end);
+    const isActivePeriod = cur >= s && cur < e;
+
+    html += `<tr><td class="period-label">${p.label}<br><span style="font-size:8px;color:var(--gray-400);">${p.start}</span></td>`;
+    const subjects = CONFIG.TIMETABLE[subjectIdx] || ['—','—','—','—','—'];
+    subjects.forEach((subj, ci) => {
+      const isTodayCol = ci === todayCol;
+      const isActive = isTodayCol && isActivePeriod;
+      let cls = '';
+      if (isActive)      cls = 'today-col active-cell';
+      else if (isTodayCol) cls = 'today-col';
+      html += `<td class="${cls}">${subj}</td>`;
+    });
+    html += '</tr>';
+    subjectIdx++;
+  });
+
+  html += '</tbody>';
+  document.getElementById('timetable').innerHTML = html;
+}
+
+buildTimetable();
+setInterval(buildTimetable, 60000); // 1분마다 현재 교시 재계산
+
+
+/* ============================================================
+   ③ D-Day 자동 계산
+   ============================================================ */
+function buildDDay() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  let html = '';
+
+  CONFIG.DDAYS.forEach((item, idx) => {
+    const target = new Date(item.date);
+    target.setHours(0,0,0,0);
+    const diff = Math.ceil((target - today) / 86400000);
+    const diffStr = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-Day!' : `D+${Math.abs(diff)}`;
+    const [y,m,d] = item.date.split('-');
+
+    if (idx > 0) html += '<hr class="dday-divider">';
+    html += `
+      <div class="dday-item">
+        <div class="dday-main">${diffStr}</div>
+        <div class="dday-label">${item.label}</div>
+        <div class="dday-sub">${y}. ${m}. ${d}</div>
+      </div>`;
+  });
+
+  document.getElementById('dday-container').innerHTML = html;
+}
+
+buildDDay();
+
+
+/* ============================================================
+   ④ NEIS 급식 API 자동 연동
+   ============================================================ */
+async function fetchMeal() {
+  const { NEIS_API_KEY, NEIS_REGION, NEIS_SCHOOL_CODE } = CONFIG;
+
+  if (NEIS_API_KEY === 'YOUR_NEIS_API_KEY' || NEIS_SCHOOL_CODE === 'YOUR_SCHOOL_CODE') {
+    document.getElementById('meal-list').innerHTML = '<li class="meal-loading">샘플 급식 데이터 표시 중</li>';
+    document.getElementById('meal-kcal').textContent = '총 -- kcal';
+    document.getElementById('meal-notice').classList.add('show');
+    // 샘플 데이터
+    const sample = ['잡곡밥','된장찌개','제육볶음','시금치나물','배추김치','요구르트'];
+    document.getElementById('meal-list').innerHTML = sample.map(m => `<li class="meal-item">${m}</li>`).join('');
+    document.getElementById('meal-kcal').textContent = '총 약 650 kcal (샘플)';
+    return;
+  }
+
+  try {
+    const today = new Date();
+    const ymd = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+    const neisUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_REGION}&SD_SCHUL_CODE=${NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`;
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent(neisUrl)}`;
+
+    const res = await fetch(url);
+    const raw = await res.json();
+    const data = JSON.parse(raw.contents);
+    const info = data?.mealServiceDietInfo?.[1]?.row?.[0];
+
+    if (!info) {
+      document.getElementById('meal-list').innerHTML = '<li class="meal-loading">오늘 급식 정보 없음</li>';
+      return;
+    }
+
+    // 메뉴 파싱 (알레르기 번호 제거)
+    const menus = info.DDISH_NM
+      .split('<br/>')
+      .map(m => m.replace(/\(\d+(\.\d+)*\)/g,'').replace(/\d+\./g,'').trim())
+      .filter(Boolean);
+
+    document.getElementById('meal-list').innerHTML = menus.map(m => `<li class="meal-item">${m}</li>`).join('');
+    document.getElementById('meal-kcal').textContent = `총 ${info.CAL_INFO}`;
+  } catch(e) {
+    document.getElementById('meal-list').innerHTML = '<li class="meal-loading">급식 정보 불러오기 실패</li>';
+  }
+}
+
+fetchMeal();
+
+
+/* ============================================================
+   ⑤ NEIS 학사일정 자동 연동 (월 이동 포함)
+   ============================================================ */
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth() + 1;
+
+async function fetchSchedule(year, month) {
+  document.getElementById('cal-month-label').textContent = `📅 ${year}년 ${month}월 학사일정`;
+  const el = document.getElementById('event-list');
+
+  const { NEIS_API_KEY, NEIS_REGION, NEIS_SCHOOL_CODE } = CONFIG;
+
+  if (NEIS_API_KEY === 'YOUR_NEIS_API_KEY' || NEIS_SCHOOL_CODE === 'YOUR_SCHOOL_CODE') {
+    // 샘플 데이터
+    const sample = [
+      { date:`${month}/18`, name:'수업공개 참관일', tag:'공개' },
+      { date:`${month}/20`, name:'학부모 상담주간', tag:'상담' },
+      { date:`${month}/25`, name:'평가계획서 제출', tag:'마감' },
+      { date:`${month}/31`, name:'학급일지 결재',   tag:'결재' },
+    ];
+    el.innerHTML = sample.map(e => `
+      <li class="event-item">
+        <span class="event-date">${e.date}</span>
+        <span class="event-name">${e.name}</span>
+        <span class="event-tag">${e.tag}</span>
+      </li>`).join('');
+    return;
+  }
+
+  try {
+    const ym = `${year}${String(month).padStart(2,'0')}`;
+    const neisUrl = `https://open.neis.go.kr/hub/SchoolSchedule?KEY=${NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_REGION}&SD_SCHUL_CODE=${NEIS_SCHOOL_CODE}&AA_YMD=${ym}`;
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent(neisUrl)}`;
+    const res = await fetch(url);
+    const raw = await res.json();
+    const data = JSON.parse(raw.contents);
+    const rows = data?.SchoolSchedule?.[1]?.row;
+
+    if (!rows || rows.length === 0) {
+      el.innerHTML = '<li class="event-item" style="color:var(--gray-400);font-style:italic;">이달 학사일정 없음</li>';
+      return;
+    }
+
+    el.innerHTML = rows.slice(0, 6).map(r => {
+      const d = r.AA_YMD.slice(4); // MMDD
+      const dateLabel = `${parseInt(d.slice(0,2))}/${parseInt(d.slice(2))}`;
+      return `
+        <li class="event-item">
+          <span class="event-date">${dateLabel}</span>
+          <span class="event-name">${r.EVENT_NM}</span>
+          <span class="event-tag">${r.SBTR_DD_SC_NM || '일정'}</span>
+        </li>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<li class="event-item" style="color:var(--gray-400);">학사일정 불러오기 실패</li>';
+  }
+}
+
+document.getElementById('cal-prev').addEventListener('click', () => {
+  calMonth--;
+  if (calMonth < 1) { calMonth = 12; calYear--; }
+  fetchSchedule(calYear, calMonth);
+});
+document.getElementById('cal-next').addEventListener('click', () => {
+  calMonth++;
+  if (calMonth > 12) { calMonth = 1; calYear++; }
+  fetchSchedule(calYear, calMonth);
+});
+
+fetchSchedule(calYear, calMonth);
+
+
+/* ============================================================
+   ⑥ Google Sheets 전광판 폴링
+   ============================================================ */
+async function fetchTicker() {
+  const { SHEETS_API_KEY, SHEET_ID, SHEET_RANGE } = CONFIG;
+
+  if (SHEETS_API_KEY === 'YOUR_GOOGLE_API_KEY' || SHEET_ID === 'YOUR_SHEET_ID') {
+    document.getElementById('ticker-text').textContent =
+      '📢 kimju.zip 대시보드 · Google Sheets 연동 후 이 공간에 실시간 공지가 표시됩니다 ✨';
+    return;
+  }
+
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_RANGE}?key=${SHEETS_API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const text = data?.values?.[0]?.[0];
+    if (text) document.getElementById('ticker-text').textContent = `📢 ${text}`;
+  } catch(e) {
+    // 조용히 실패
+  }
+}
+
+fetchTicker();
+setInterval(fetchTicker, CONFIG.SHEET_POLL_SEC * 1000);
+
+
+/* ============================================================
+   ⑦ 날씨 (Open-Meteo — 무료, API 키 불필요)
+      경기도 수원 기준 (lat/lon 수정 가능)
+   ============================================================ */
+async function fetchWeather() {
+  try {
+    // 경기도 중심 좌표 (수정 가능)
+    const lat = 37.27, lon = 127.0;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const c = data.current;
+    const d = data.daily;
+
+    const wmoIcon = (code) => {
+      if (code === 0)           return '☀️';
+      if (code <= 3)            return '⛅';
+      if (code <= 48)           return '🌫️';
+      if (code <= 67)           return '🌧️';
+      if (code <= 77)           return '❄️';
+      if (code <= 82)           return '🌦️';
+      return '⛈️';
+    };
+    const wmoDesc = (code) => {
+      if (code === 0)  return '맑음';
+      if (code <= 3)   return '구름 조금';
+      if (code <= 48)  return '안개';
+      if (code <= 67)  return '비';
+      if (code <= 77)  return '눈';
+      if (code <= 82)  return '소나기';
+      return '뇌우';
+    };
+
+    document.getElementById('w-temp').textContent = `${Math.round(c.temperature_2m)}°`;
+    document.getElementById('w-icon').textContent = wmoIcon(c.weathercode);
+    document.getElementById('w-desc').textContent = `경기 · ${wmoDesc(c.weathercode)}`;
+    document.getElementById('w-max').textContent = `${Math.round(d.temperature_2m_max[0])}°`;
+    document.getElementById('w-min').textContent = `${Math.round(d.temperature_2m_min[0])}°`;
+    // 미세먼지는 Open-Meteo 무료 플랜 미지원 → 고정 표시
+    document.getElementById('w-pm10').textContent  = '정보없음';
+    document.getElementById('w-pm25').textContent  = '정보없음';
+  } catch(e) {
+    document.getElementById('w-desc').textContent = '날씨 정보 없음';
+  }
+}
+
+fetchWeather();
+setInterval(fetchWeather, 30 * 60 * 1000); // 30분마다 갱신
+
+
+/* ============================================================
+   ⑧ To-Do 체크박스
+   ============================================================ */
+document.querySelectorAll('#todo-list input[type=checkbox]').forEach(cb => {
+  cb.addEventListener('change', function() {
+    this.closest('.todo-item').classList.toggle('done', this.checked);
+  });
+});
+</script>
+</body>
+</html>
