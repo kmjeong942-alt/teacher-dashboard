@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>kimju.zip</title>
+<title>kmj.zip</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script>
 /* ============================================================
@@ -87,16 +87,14 @@ const QUOTES = [
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;overflow:hidden;color:var(--ink);}
 
-/* 전광판 */
-.ticker{height:26px;background:var(--rose);display:flex;align-items:center;overflow:hidden;position:fixed;top:0;left:0;right:0;z-index:200;}
-.ticker-inner{white-space:nowrap;animation:tx 35s linear infinite;font-size:11.5px;font-weight:600;color:#fff;letter-spacing:.06em;padding-left:100vw;}
-@keyframes tx{to{transform:translateX(-100%);}}
+/* 상단 바 (고정) */
+.topbar{height:26px;background:var(--rose);display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;z-index:200;font-size:12px;font-weight:600;color:#fff;letter-spacing:.08em;}
 
 /* 그리드: 4열 3행 */
 .grid{
   display:grid;
   grid-template-columns:1.5fr 2fr 1fr 0.5fr;
-  grid-template-rows:1fr 1fr 0.7fr;
+  grid-template-rows:1fr 1fr 90px;
   gap:7px;padding:7px;
   height:calc(100vh - 26px);
   margin-top:26px;
@@ -179,29 +177,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
 .memo-ta:focus{border-color:var(--rose-md);background:#fff;}
 .memo-ta::placeholder{color:var(--ink-3);}
 
-/* ═══ 2+3열 하단: AI 채팅 ═══ */
-.chat-body{display:flex;gap:8px;flex:1;min-height:0;}
-.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;min-height:0;}
-.cm{display:flex;gap:5px;align-items:flex-start;}
-.cm.user{flex-direction:row-reverse;}
-.cb{max-width:88%;padding:6px 11px;border-radius:10px;font-size:14px;line-height:1.55;color:var(--ink-2);}
-.cm.ai .cb{background:var(--bg);border:1px solid var(--line);border-radius:3px 10px 10px 10px;}
-.cm.user .cb{background:var(--rose);color:#fff;border-radius:10px 3px 10px 10px;}
-.ca{width:21px;height:21px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;}
-.cm.ai .ca{background:var(--rose-lt);}
-.cm.user .ca{background:var(--rose);}
-.thinking span{width:4px;height:4px;background:var(--ink-3);border-radius:50%;display:inline-block;margin:0 2px;animation:th 1.2s ease infinite;}
-.thinking span:nth-child(2){animation-delay:.2s}
-.thinking span:nth-child(3){animation-delay:.4s}
-@keyframes th{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
-.chat-input{display:flex;flex-direction:column;justify-content:flex-end;gap:4px;flex-shrink:0;width:210px;}
-.chat-in{flex:1;border:1px solid var(--line);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--ink);outline:none;background:var(--bg);resize:none;transition:border .15s;}
-.chat-in:focus{border-color:var(--rose-md);background:#fff;}
-.chat-in::placeholder{color:var(--ink-3);}
-.chat-btn{background:var(--rose);border:none;border-radius:var(--r-sm);padding:7px 11px;cursor:pointer;color:#fff;font-size:13px;font-family:'Noto Sans KR',sans-serif;transition:opacity .15s;}
-.chat-btn:hover{opacity:.85;}
-.chat-btn:disabled{opacity:.5;cursor:not-allowed;}
-
 /* ═══ 2+3열 상단: 통합 일정 달력 ═══ */
 .unified-cal{grid-column:2/4;grid-row:1;}
 .filter-row{display:flex;gap:5px;margin-bottom:7px;flex-shrink:0;}
@@ -209,14 +184,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
 .ftab:hover{border-color:var(--rose-md);color:var(--rose);}
 .ftab.active{background:var(--rose);border-color:var(--rose);color:#fff;}
 
-/* ═══ 2열 중간: 할일(노션) 2fr ═══ */
+/* ═══ 2열 중간: 할일(노션) ═══ */
 .todo-p{grid-column:2;grid-row:2;}
 
-/* ═══ 3열 중간: 메모(노션) 1fr ═══ */
+/* ═══ 3열 중간: 메모(노션) ═══ */
 .memo-p{grid-column:3;grid-row:2;}
 
-/* ═══ 2+3열 하단: AI 채팅 ═══ */
-.ai-p{grid-column:2/4;grid-row:3;display:flex;flex-direction:column;}
+/* ═══ 2+3열 하단: 퀵메뉴 ═══ */
+.ai-p{grid-column:2/4;grid-row:3;display:flex;flex-direction:row;align-items:center;gap:8px;padding:8px 13px!important;}
 
 /* 달력 공통 */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;flex-shrink:0;}
@@ -256,11 +231,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
 .col-r{grid-column:4;grid-row:1/4;display:flex;flex-direction:column;gap:7px;}
 .col-r .p{flex:1;min-height:0;padding:9px 11px;}
 
-/* 퀵메뉴 */
-.q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;flex:1;}
-.qb{aspect-ratio:1;background:var(--bg);border:1px solid var(--line);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;text-decoration:none;transition:all .15s;}
+/* 퀵메뉴 (2행 그리드) */
+.q-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:4px;flex:1;}
+.qb{background:var(--bg);border:1px solid var(--line);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;text-decoration:none;transition:all .15s;}
 .qb:hover{background:var(--rose-lt);border-color:var(--rose-md);transform:translateY(-1px);}
-.q-edit{width:100%;background:transparent;border:1px dashed var(--line);border-radius:5px;padding:2px;font-size:11.5px;color:var(--ink-3);cursor:pointer;margin-top:4px;font-family:'Noto Sans KR',sans-serif;flex-shrink:0;transition:all .15s;}
+.q-edit{background:transparent;border:1px dashed var(--line);border-radius:5px;padding:4px 8px;font-size:12px;color:var(--ink-3);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .q-edit:hover{background:var(--rose-lt);color:var(--rose);}
 
 /* 날씨 */
@@ -363,7 +338,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
 </head>
 <body>
 
-<div class="ticker"><div class="ticker-inner" id="ticker">📢 kimju.zip — 교사 전용 대시보드</div></div>
+<div class="topbar">kmj.zip</div>
 
 <div class="grid">
 
@@ -441,23 +416,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
   <textarea class="memo-ta" id="memo-ta" placeholder="메모 입력 후 저장..."></textarea>
 </div>
 
-<!-- 2+3열 하단: AI 채팅 -->
+<!-- 2+3열 하단: 퀵메뉴 -->
 <div class="p ai-p">
-  <div class="lbl">🤖 AI 어시스턴트 <span class="badge">Gemini</span></div>
-  <div class="chat-body">
-    <div class="chat-msgs" id="chat-msgs">
-      <div class="cm ai"><div class="ca">🤖</div><div class="cb">안녕하세요! 수업 아이디어, IEP 작성, 학생 지도 등 도와드릴게요 😊</div></div>
-    </div>
-    <div class="chat-input">
-      <textarea class="chat-in" id="chat-in" placeholder="메시지 입력...&#10;(Enter 전송)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
-      <button class="chat-btn" id="chat-send" onclick="sendChat()">➤ 전송</button>
-    </div>
-  </div>
+  <div class="q-grid" id="q-grid"></div>
+  <button class="q-edit" onclick="openQM()">✏️</button>
 </div>
 
-<!-- 4열: 독립 6등분 -->
+<!-- 4열: 독립 5등분 -->
 <div class="col-r">
-  <div class="p"><div class="lbl">🔗 바로가기</div><div class="q-grid" id="q-grid"></div><button class="q-edit" onclick="openQM()">✏️ 편집</button></div>
   <div class="p">
     <div class="lbl">🌤️ 날씨</div>
     <div class="wx-r"><div><div class="wx-temp" id="wx-t">--°</div><div class="wx-desc" id="wx-d">경기 · 로딩 중</div></div><div class="wx-icon" id="wx-i">🌡️</div></div>
@@ -802,40 +768,6 @@ async function saveMemo(){
 }
 setInterval(()=>localStorage.setItem('kj_memo',$('memo-ta').value),5000);
 $('memo-ta').value=localStorage.getItem('kj_memo')||'';
-
-/* ─── AI 채팅 (Gemini) ─── */
-let chatHist=[];
-function addMsg(role,text){
-  const w=$('chat-msgs'),d=document.createElement('div');
-  d.className=`cm ${role}`;
-  d.innerHTML=`<div class="ca">${role==='ai'?'🤖':'👤'}</div><div class="cb">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
-  w.appendChild(d);w.scrollTop=w.scrollHeight;
-}
-function showThinking(){
-  const w=$('chat-msgs'),d=document.createElement('div');
-  d.className='cm ai';d.id='thinking';
-  d.innerHTML=`<div class="ca">🤖</div><div class="cb"><div class="thinking"><span></span><span></span><span></span></div></div>`;
-  w.appendChild(d);w.scrollTop=w.scrollHeight;
-}
-async function sendChat(){
-  const inp=$('chat-in'),btn=$('chat-send'),text=inp.value.trim();
-  if(!text)return;
-  inp.value='';inp.disabled=true;btn.disabled=true;
-  addMsg('user',text);chatHist.push({role:'user',content:text});
-  showThinking();
-  try{
-    const res=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        system:'당신은 특수교사를 돕는 AI 어시스턴트입니다. 수업 아이디어, IEP 작성, 행동지원, 학생 지도, 학사 업무 등을 친절하고 실용적으로 도와주세요. 한국어로 간결하게 답변하세요.',
-        messages:chatHist
-      })
-    });
-    const data=await res.json(),reply=data?.text||'답변을 가져오지 못했어요.';
-    chatHist.push({role:'assistant',content:reply});
-    $('thinking')?.remove();addMsg('ai',reply);
-  }catch{$('thinking')?.remove();addMsg('ai','오류가 발생했어요. Vercel URL로 접속했는지 확인해주세요.');}
-  inp.disabled=false;btn.disabled=false;inp.focus();
-}
 
 /* ─── 뽀모도로 ─── */
 const PF=()=>window._pomoFocusSec||25*60;
