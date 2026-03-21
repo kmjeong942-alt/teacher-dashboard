@@ -588,14 +588,13 @@ buildDDay();
 async function fetchMeal(){
   try{
     const n=new Date(),ymd=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`;
-    const base=`https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${CONFIG.NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`;
-    const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(base)}`);
-    const raw=await res.json(),data=JSON.parse(raw.contents),info=data?.mealServiceDietInfo?.[1]?.row?.[0];
-    if(!info){$('meal-grid').innerHTML='<span style="font-size:10.5px;color:var(--ink-3)">급식 없음</span>';return;}
+    const res=await fetch(`/api/neis?type=meal&KEY=${CONFIG.NEIS_API_KEY}&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`);
+    const data=await res.json(),info=data?.mealServiceDietInfo?.[1]?.row?.[0];
+    if(!info){$('meal-grid').innerHTML='<span style="font-size:12px;color:var(--ink-3)">급식 없음</span>';return;}
     const menus=info.DDISH_NM.split('<br/>').map(m=>m.replace(/\(\d+(\.\d+)*\)/g,'').replace(/\d+\./g,'').trim()).filter(Boolean);
     $('meal-grid').innerHTML=menus.map(m=>`<span class="mc">${m}</span>`).join('');
     $('meal-kcal').textContent=`총 ${info.CAL_INFO}`;
-  }catch{$('meal-grid').innerHTML='<span style="font-size:10.5px;color:var(--ink-3)">급식 없음</span>';}
+  }catch{$('meal-grid').innerHTML='<span style="font-size:12px;color:var(--ink-3)">급식 없음</span>';}
 }
 fetchMeal();
 
@@ -709,9 +708,8 @@ async function fetchUnified(){
   // NEIS 학사일정 fetch
   try{
     const ym=`${ucY}${String(ucM).padStart(2,'0')}`;
-    const base=`https://open.neis.go.kr/hub/SchoolSchedule?KEY=${CONFIG.NEIS_API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&AA_YMD=${ym}`;
-    const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(base)}`);
-    const raw=await res.json(),data=JSON.parse(raw.contents),rows=data?.SchoolSchedule?.[1]?.row;
+    const res=await fetch(`/api/neis?type=schedule&KEY=${CONFIG.NEIS_API_KEY}&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&AA_YMD=${ym}`);
+    const data=await res.json(),rows=data?.SchoolSchedule?.[1]?.row;
     if(rows?.length){
       ucNeisEvts=rows.map(r=>{
         const d=r.AA_YMD.slice(4);
