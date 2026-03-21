@@ -95,7 +95,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
   display:grid;
   grid-template-columns:1.5fr 2fr 1fr 0.5fr;
   grid-template-rows:1fr 1fr 90px;
-  gap:7px;padding:7px;
+  gap:8px;padding:18px;
   height:calc(100vh - 26px);
   margin-top:26px;
 }
@@ -487,9 +487,12 @@ const $=id=>document.getElementById(id);
 const toMin=(h,m)=>h*60+m;
 const parseT=s=>{const[h,m]=s.split(':').map(Number);return toMin(h,m);};
 
-/* ─── Vercel API 프록시 ─── */
+/* ─── Vercel API 베이스 URL ─── */
+const VERCEL = 'https://teacher-dashboard-topaz.vercel.app';
+
+/* ─── Vercel 노션 프록시 ─── */
 async function nFetch(ep,method='GET',body=null){
-  const r=await fetch(`/api/notion?endpoint=${encodeURIComponent(ep)}`,{
+  const r=await fetch(`${VERCEL}/api/notion?endpoint=${encodeURIComponent(ep)}`,{
     method,headers:{'Content-Type':'application/json'},
     body:body?JSON.stringify(body):undefined
   });
@@ -554,7 +557,7 @@ buildDDay();
 async function fetchMeal(){
   try{
     const n=new Date(),ymd=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`;
-    const res=await fetch(`/api/neis?type=meal&KEY=${CONFIG.NEIS_API_KEY}&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`);
+    const res=await fetch(`${VERCEL}/api/neis?type=meal&KEY=${CONFIG.NEIS_API_KEY}&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=2`);
     const data=await res.json(),info=data?.mealServiceDietInfo?.[1]?.row?.[0];
     if(!info){$('meal-grid').innerHTML='<span style="font-size:12px;color:var(--ink-3)">급식 없음</span>';return;}
     const menus=info.DDISH_NM.split('<br/>').map(m=>m.replace(/\(\d+(\.\d+)*\)/g,'').replace(/\d+\./g,'').trim()).filter(Boolean);
@@ -674,7 +677,7 @@ async function fetchUnified(){
   // NEIS 학사일정 fetch
   try{
     const ym=`${ucY}${String(ucM).padStart(2,'0')}`;
-    const res=await fetch(`/api/neis?type=schedule&KEY=${CONFIG.NEIS_API_KEY}&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&AA_YMD=${ym}`);
+    const res=await fetch(`${VERCEL}/api/neis?type=schedule&KEY=${CONFIG.NEIS_API_KEY}&ATPT_OFCDC_SC_CODE=${CONFIG.NEIS_REGION}&SD_SCHUL_CODE=${CONFIG.NEIS_SCHOOL_CODE}&AA_YMD=${ym}`);
     const data=await res.json(),rows=data?.SchoolSchedule?.[1]?.row;
     if(rows?.length){
       ucNeisEvts=rows.map(r=>{
